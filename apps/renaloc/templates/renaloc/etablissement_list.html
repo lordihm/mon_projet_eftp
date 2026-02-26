@@ -1,0 +1,25 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Établissements formels{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="border-bottom pb-2">
+            <i class="fas fa-building"></i> Établissements formels
+        </h2>
+        <a href="{% url 'eftp_formel:etablissement_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Nouvel établissement
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <p class="text-muted text-center py-4">
+                <i class="fas fa-info-circle fa-2x mb-3"></i><br>
+                Liste des établissements à venir...
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

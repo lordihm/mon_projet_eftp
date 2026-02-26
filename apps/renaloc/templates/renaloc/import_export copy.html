@@ -1,0 +1,159 @@
+{% extends 'core/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Import/Export - Renaloc{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2 class="border-bottom pb-2">
+            <i class="fas fa-map-marker-alt"></i> 
+            Gestion des localités du Niger (Renaloc)
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Carte des régions -->
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-globe-africa"></i> Régions</h5>
+            </div>
+            <div class="card-body">
+                <h3 class="text-center">{{ regions_count }}</h3>
+                <p class="text-center text-muted">Nombre de régions</p>
+                <a href="#" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-list"></i> Voir la liste
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Carte des départements -->
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-map"></i> Départements</h5>
+            </div>
+            <div class="card-body">
+                <h3 class="text-center">{{ departements_count }}</h3>
+                <p class="text-center text-muted">Nombre de départements</p>
+                <a href="#" class="btn btn-outline-success w-100">
+                    <i class="fas fa-list"></i> Voir la liste
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Carte des communes -->
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-city"></i> Communes</h5>
+            </div>
+            <div class="card-body">
+                <h3 class="text-center">{{ communes_count }}</h3>
+                <p class="text-center text-muted">Nombre de communes</p>
+                <a href="#" class="btn btn-outline-info w-100">
+                    <i class="fas fa-list"></i> Voir la liste
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-file-import"></i> Importation des données</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Fichier Excel/CSV</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".xlsx,.xls,.csv">
+                    </div>
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Type de données</label>
+                        <select class="form-select" id="type" name="type">
+                            <option value="regions">Régions</option>
+                            <option value="departements">Départements</option>
+                            <option value="communes">Communes</option>
+                            <option value="quartiers">Quartiers/Villages</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-upload"></i> Importer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-file-export"></i> Exportation des données</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{% url 'renaloc:export_data' %}">
+                    <div class="mb-3">
+                        <label for="export_type" class="form-label">Type de données à exporter</label>
+                        <select class="form-select" id="export_type" name="type">
+                            <option value="all">Toutes les données</option>
+                            <option value="regions">Régions uniquement</option>
+                            <option value="departements">Départements uniquement</option>
+                            <option value="communes">Communes uniquement</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="format" class="form-label">Format d'export</label>
+                        <select class="form-select" id="format" name="format">
+                            <option value="excel">Excel (.xlsx)</option>
+                            <option value="csv">CSV</option>
+                            <option value="json">JSON</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-download"></i> Exporter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Format des fichiers pour importation</h5>
+            </div>
+            <div class="card-body">
+                <h6>Pour les régions :</h6>
+                <pre class="bg-light p-2">code, nom
+01, AGADEZ
+02, DIFFA
+03, DOSSO
+...</pre>
+                
+                <h6>Pour les départements :</h6>
+                <pre class="bg-light p-2">code, nom, region_code
+0101, ARLIT, 01
+0102, BILMA, 01
+0201, DIFFA, 02
+...</pre>
+                
+                <h6>Pour les communes :</h6>
+                <pre class="bg-light p-2">code, nom, departement_code, type
+010101, ARLIT, 0101, URBAINE
+010102, GOUGARAM, 0101, RURALE
+...</pre>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

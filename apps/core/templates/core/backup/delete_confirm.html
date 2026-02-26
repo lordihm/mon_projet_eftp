@@ -1,0 +1,49 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Confirmer la suppression{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0"><i class="fas fa-trash"></i> Confirmer la suppression</h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">Êtes-vous sûr de vouloir supprimer cette sauvegarde ?</p>
+                
+                <div class="alert alert-warning">
+                    <strong>Attention :</strong> Cette action est irréversible !
+                </div>
+                
+                <table class="table">
+                    <tr>
+                        <th>Fichier :</th>
+                        <td>{{ backup.nom_fichier }}</td>
+                    </tr>
+                    <tr>
+                        <th>Date :</th>
+                        <td>{{ backup.date_creation|date:"d/m/Y H:i:s" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Taille :</th>
+                        <td>{{ backup.taille_formatee }}</td>
+                    </tr>
+                </table>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Confirmer la suppression
+                        </button>
+                        <a href="{% url 'core:backup_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

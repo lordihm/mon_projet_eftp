@@ -1,0 +1,131 @@
+{% extends 'eftp_formel/base_formel.html' %}
+
+{% block title %}Import/Export - EFTP Formel{% endblock %}
+
+{% block formel_content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <h2>
+            <i class="fas fa-exchange-alt me-2"></i>
+            Import/Export des données
+        </h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-import me-2"></i>
+                    Importation
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" action="{% url 'eftp_formel:import_data' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Fichier à importer</label>
+                        <input type="file" class="form-control" id="file" name="file" 
+                               accept=".xlsx,.xls,.csv" required>
+                        <div class="form-text">Formats acceptés : Excel (.xlsx, .xls) et CSV</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="model" class="form-label">Type de données</label>
+                        <select class="form-select" id="model" name="model" required>
+                            <option value="">Choisissez...</option>
+                            <option value="etablissement">Établissements</option>
+                            <option value="apprenant">Apprenants</option>
+                            <option value="filiere">Filières</option>
+                            <option value="formateur">Formateurs</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-upload me-2"></i>
+                        Importer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-export me-2"></i>
+                    Exportation
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" action="{% url 'eftp_formel:export_data' %}">
+                    <div class="mb-3">
+                        <label for="export_model" class="form-label">Données à exporter</label>
+                        <select class="form-select" id="export_model" name="model" required>
+                            <option value="">Choisissez...</option>
+                            <option value="all">Toutes les données</option>
+                            <option value="etablissement">Établissements uniquement</option>
+                            <option value="apprenant">Apprenants uniquement</option>
+                            <option value="filiere">Filières uniquement</option>
+                            <option value="formateur">Formateurs uniquement</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="format" class="form-label">Format d'export</label>
+                        <select class="form-select" id="format" name="format" required>
+                            <option value="excel">Excel (.xlsx)</option>
+                            <option value="csv">CSV</option>
+                            <option value="json">JSON</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-info text-white w-100">
+                        <i class="fas fa-download me-2"></i>
+                        Exporter
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Modèles de fichiers
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="#" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-download me-2"></i>
+                            Modèle Établissements
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-download me-2"></i>
+                            Modèle Apprenants
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-download me-2"></i>
+                            Modèle Filières
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#" class="btn btn-outline-primary w-100 mb-2">
+                            <i class="fas fa-download me-2"></i>
+                            Modèle Formateurs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

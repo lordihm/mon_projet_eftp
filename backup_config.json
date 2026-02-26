@@ -1,0 +1,8 @@
+{
+  "auto_backup_enabled": false,
+  "backup_frequency": "daily",
+  "backup_time": "18:00",
+  "max_backups": 30,
+  "include_media": false,
+  "notification_email": "lordihm@gmail.com"
+}

@@ -1,0 +1,90 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Accueil - EFTP Recensement{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 text-center">
+        <div class="card shadow-sm border-0 mt-5">
+            <div class="card-body p-5">
+                <h1 class="display-4 mb-4">
+                    <i class="fas fa-school text-primary"></i>
+                    Recensement EFTP 2025-2026
+                </h1>
+                <p class="lead mb-4">
+                    Enseignement et Formation Techniques et Professionnels<br>
+                    <small class="text-muted">Formel et Non Formel</small>
+                </p>
+                
+                <hr class="my-4">
+                
+                <div class="row mt-5">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-building fa-3x text-primary mb-3"></i>
+                                <h3>EFTP Formel</h3>
+                                <p>Gestion des établissements d'enseignement technique et professionnel formels</p>
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'eftp_formel:etablissement_list' %}" class="btn btn-primary">
+                                        <i class="fas fa-arrow-right"></i> Accéder
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'core:login' %}" class="btn btn-primary">
+                                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-tools fa-3x text-success mb-3"></i>
+                                <h3>EFTP Non Formel</h3>
+                                <p>Gestion des structures de formation professionnelle non formelles</p>
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'eftp_non_formel:structure_list' %}" class="btn btn-success">
+                                        <i class="fas fa-arrow-right"></i> Accéder
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'core:login' %}" class="btn btn-success">
+                                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-info">
+                            <div class="card-body text-center">
+                                <i class="fas fa-map-marker-alt fa-3x text-info mb-3"></i>
+                                <h3>Renaloc</h3>
+                                <p>Gestion des localités du Niger (Régions, Départements, Communes)</p>
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'renaloc:import_export' %}" class="btn btn-info text-white">
+                                        <i class="fas fa-arrow-right"></i> Accéder
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'core:login' %}" class="btn btn-info text-white">
+                                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if not user.is_authenticated %}
+                <div class="alert alert-info mt-4">
+                    <i class="fas fa-info-circle"></i>
+                    Veuillez vous connecter pour accéder aux fonctionnalités de l'application.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

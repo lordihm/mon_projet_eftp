@@ -1,0 +1,94 @@
+{% extends 'eftp_formel/base_formel.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if form.instance.pk %}Modifier{% else %}Nouvel{% endif %} établissement
+{% endblock %}
+
+{% block formel_content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-{% if form.instance.pk %}edit{% else %}plus-circle{% endif %} me-2"></i>
+                    {% if form.instance.pk %}
+                        Modifier l'établissement : {{ form.instance.nom }}
+                    {% else %}
+                        Nouvel établissement formel
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="etablissementForm">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Utilisation de crispy forms pour un rendu plus simple -->
+                    {{ form|crispy }}
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'eftp_formel:etablissement_list' %}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 
+                            {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Dynamique pour les select dépendants
+    const regionSelect = document.getElementById('id_region');
+    const deptSelect = document.getElementById('id_departement');
+    const communeSelect = document.getElementById('id_commune');
+    
+    if (regionSelect) {
+        regionSelect.addEventListener('change', function() {
+            const regionId = this.value;
+            if (regionId) {
+                fetch(`/renaloc/get-departements/?region_id=${regionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        deptSelect.innerHTML = '<option value="">---------</option>';
+                        data.departements.forEach(dept => {
+                            deptSelect.innerHTML += `<option value="${dept.id}">${dept.nom}</option>`;
+                        });
+                    });
+            }
+        });
+    }
+    
+    if (deptSelect) {
+        deptSelect.addEventListener('change', function() {
+            const deptId = this.value;
+            if (deptId) {
+                fetch(`/renaloc/get-communes/?departement_id=${deptId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        communeSelect.innerHTML = '<option value="">---------</option>';
+                        data.communes.forEach(commune => {
+                            communeSelect.innerHTML += `<option value="${commune.id}">${commune.nom}</option>`;
+                        });
+                    });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Configuration des sauvegardes{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="fas fa-cog"></i> Configuration des sauvegardes automatiques</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="auto_backup_enabled" name="auto_backup_enabled"
+                                   {% if config.auto_backup_enabled %}checked{% endif %}>
+                            <label class="form-check-label" for="auto_backup_enabled">
+                                Activer les sauvegardes automatiques
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="backup_frequency" class="form-label">Fréquence des sauvegardes</label>
+                        <select class="form-select" id="backup_frequency" name="backup_frequency">
+                            <option value="daily" {% if config.backup_frequency == 'daily' %}selected{% endif %}>
+                                Quotidienne
+                            </option>
+                            <option value="weekly" {% if config.backup_frequency == 'weekly' %}selected{% endif %}>
+                                Hebdomadaire
+                            </option>
+                            <option value="monthly" {% if config.backup_frequency == 'monthly' %}selected{% endif %}>
+                                Mensuelle
+                            </option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="backup_time" class="form-label">Heure de la sauvegarde</label>
+                        <input type="time" class="form-control" id="backup_time" 
+                               name="backup_time" value="{{ config.backup_time|default:'02:00' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="max_backups" class="form-label">Nombre maximum de sauvegardes à conserver</label>
+                        <input type="number" class="form-control" id="max_backups" 
+                               name="max_backups" value="{{ config.max_backups|default:30 }}" min="1" max="365">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   id="include_media" name="include_media"
+                                   {% if config.include_media %}checked{% endif %}>
+                            <label class="form-check-label" for="include_media">
+                                Inclure les fichiers médias dans la sauvegarde
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notification_email" class="form-label">
+                            Email de notification (optionnel)
+                        </label>
+                        <input type="email" class="form-control" id="notification_email" 
+                               name="notification_email" value="{{ config.notification_email|default:'' }}"
+                               placeholder="admin@exemple.com">
+                        <div class="form-text">
+                            Recevoir une notification après chaque sauvegarde automatique
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Important :</strong> Les sauvegardes automatiques nécessitent la configuration 
+                        d'une tâche cron sur le serveur.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer la configuration
+                        </button>
+                        <a href="{% url 'core:backup_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

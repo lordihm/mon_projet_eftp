@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n admin_urls %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header bg-warning">
+            <h2>Changer la région des départements sélectionnés</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="alert alert-info">
+                    <strong>Départements sélectionnés :</strong>
+                    <ul>
+                        {% for departement in departements %}
+                        <li>{{ departement.nom }} ({{ departement.code }})</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="form-group">
+                    <label for="region">Nouvelle région :</label>
+                    <select name="region" id="region" class="form-control" required>
+                        <option value="">-- Choisir une région --</option>
+                        {% for region in regions %}
+                        <option value="{{ region.id }}">{{ region.nom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group mt-3">
+                    <button type="submit" name="apply" class="btn btn-primary">
+                        <i class="fas fa-check"></i> Appliquer
+                    </button>
+                    <a href="{% url 'admin:renaloc_departement_changelist' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                </div>
+                
+                {% for obj in departements %}
+                <input type="hidden" name="_selected_action" value="{{ obj.pk|unlocalize }}">
+                {% endfor %}
+                <input type="hidden" name="action" value="changer_region">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

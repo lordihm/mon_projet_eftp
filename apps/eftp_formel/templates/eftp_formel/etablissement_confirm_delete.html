@@ -1,0 +1,50 @@
+{% extends 'eftp_formel/base_formel.html' %}
+
+{% block title %}Confirmer la suppression{% endblock %}
+
+{% block formel_content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmer la suppression
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">Êtes-vous sûr de vouloir supprimer l'établissement suivant ?</p>
+                
+                <div class="alert alert-warning">
+                    <strong>Attention :</strong> Cette action est irréversible et supprimera toutes les données associées (apprenants, formateurs, filières...).
+                </div>
+                
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ etablissement.nom }}</h5>
+                        <p class="card-text">
+                            <strong>Code :</strong> {{ etablissement.code }}<br>
+                            <strong>Statut :</strong> {{ etablissement.get_statut_display }}<br>
+                            <strong>Région :</strong> {{ etablissement.region.nom }}<br>
+                            <strong>Département :</strong> {{ etablissement.departement.nom }}<br>
+                            <strong>Type :</strong> {{ etablissement.get_type_etablissement_display }}
+                        </p>
+                    </div>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'eftp_formel:etablissement_detail' etablissement.id %}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Confirmer la suppression
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

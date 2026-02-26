@@ -1,0 +1,48 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Nouvelle sauvegarde{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-plus-circle"></i> Créer une nouvelle sauvegarde</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Type de sauvegarde</label>
+                        <select class="form-select" id="type" name="type">
+                            <option value="manual">Sauvegarde manuelle (base de données)</option>
+                            <option value="full">Sauvegarde complète (base + médias)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Commentaire (optionnel)</label>
+                        <textarea class="form-control" id="comment" name="comment" 
+                                  rows="3" placeholder="Ajoutez un commentaire pour cette sauvegarde..."></textarea>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note :</strong> La sauvegarde peut prendre quelques minutes selon la taille de votre base de données.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Démarrer la sauvegarde
+                        </button>
+                        <a href="{% url 'core:backup_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

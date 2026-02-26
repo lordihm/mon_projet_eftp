@@ -1,0 +1,98 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Tableau de bord - EFTP{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="border-bottom pb-2 mb-4">
+        <i class="fas fa-chart-bar"></i> Tableau de bord
+    </h2>
+    
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <h5>Établissements formels</h5>
+                <h2>{{ nb_etablissements_formels }}</h2>
+                <i class="fas fa-building fa-2x"></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(45deg, #38a169, #2f855a);">
+                <h5>Structures non formelles</h5>
+                <h2>{{ nb_structures_non_formelles }}</h2>
+                <i class="fas fa-tools fa-2x"></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(45deg, #e53e3e, #c53030);">
+                <h5>Régions</h5>
+                <h2>{{ nb_regions }}</h2>
+                <i class="fas fa-map fa-2x"></i>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(45deg, #d69e2e, #b7791f);">
+                <h5>Communes</h5>
+                <h2>{{ nb_communes }}</h2>
+                <i class="fas fa-city fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history"></i> Dernières sauvegardes</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_backups %}
+                        <div class="list-group">
+                            {% for backup in recent_backups %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-database text-success"></i>
+                                            {{ backup.nom_fichier }}
+                                            <small class="text-muted d-block">
+                                                {{ backup.date_creation|date:"d/m/Y H:i" }}
+                                            </small>
+                                        </div>
+                                        <span class="badge bg-success">{{ backup.taille_formatee }}</span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Aucune sauvegarde trouvée</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Actions rapides</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'core:backup_create' %}" class="btn btn-success">
+                            <i class="fas fa-plus-circle"></i> Créer une sauvegarde
+                        </a>
+                        <a href="{% url 'eftp_formel:etablissement_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Ajouter un établissement formel
+                        </a>
+                        <a href="{% url 'eftp_non_formel:structure_create' %}" class="btn btn-success">
+                            <i class="fas fa-plus-circle"></i> Ajouter une structure non formelle
+                        </a>
+                        <a href="{% url 'admin:index' %}" class="btn btn-secondary">
+                            <i class="fas fa-cog"></i> Administration
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
