@@ -46,13 +46,82 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
-                        <!-- ... vos liens existants ... -->
+                        <!-- EFTP FORMEL -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-building"></i> EFTP Formel
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'eftp_formel:etablissement_list' %}">
+                                    <i class="fas fa-list"></i> Liste des établissements
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'eftp_formel:etablissement_create' %}">
+                                    <i class="fas fa-plus-circle"></i> Nouvel établissement
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'eftp_formel:import_export' %}">
+                                    <i class="fas fa-download"></i> Import/Export
+                                </a></li>
+                            </ul>
+                        </li>
+                        
+                        <!-- EFTP NON FORMEL -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-tools"></i> EFTP Non Formel
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'eftp_non_formel:structure_list' %}">
+                                    <i class="fas fa-list"></i> Liste des structures
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'eftp_non_formel:structure_create' %}">
+                                    <i class="fas fa-plus-circle"></i> Nouvelle structure
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'eftp_non_formel:import_export' %}">
+                                    <i class="fas fa-download"></i> Import/Export
+                                </a></li>
+                            </ul>
+                        </li>
+                        
+                        <!-- RENALOC -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'renaloc:import_export' %}">
+                                <i class="fas fa-map-marker-alt"></i> Renaloc
+                            </a>
+                        </li>
+                        
+                        <!-- TABLEAU DE BORD -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'core:dashboard' %}">
+                                <i class="fas fa-chart-bar"></i> Tableau de bord
+                            </a>
+                        </li>
+                        
+                        <!-- ADMINISTRATION -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-cogs"></i> Administration
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'core:backup_list' %}">
+                                    <i class="fas fa-database"></i> Sauvegardes
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'admin:index' %}">
+                                    <i class="fas fa-user-shield"></i> Administration
+                                </a></li>
+                            </ul>
+                        </li>
+                        
+                        <!-- DÉCONNEXION -->
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">
                                 <i class="fas fa-sign-out-alt"></i> Déconnexion
                             </a>
                         </li>
+                        
                     {% else %}
+                        <!-- CONNEXION -->
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'login' %}">
                                 <i class="fas fa-sign-in-alt"></i> Connexion
@@ -62,8 +131,7 @@
                 </ul>
             </div>
         </div>
-    </nav>
-    
+    </nav>    
     <!-- Messages -->
     {% if messages %}
         <div class="container mt-3">

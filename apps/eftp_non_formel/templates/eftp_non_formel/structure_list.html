@@ -1,24 +1,219 @@
-{% extends 'core/base.html' %}
+{% extends 'eftp_non_formel/base_non_formel.html' %}
+{% load static %}
 
-{% block title %}Structures non formelles{% endblock %}
+{% block title %}Liste des structures non formelles{% endblock %}
 
-{% block content %}
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="border-bottom pb-2">
-            <i class="fas fa-tools"></i> Structures non formelles
-        </h2>
-        <a href="{% url 'eftp_non_formel:structure_create' %}" class="btn btn-success">
-            <i class="fas fa-plus-circle"></i> Nouvelle structure
+{% block nonformel_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-list me-2"></i>
+        Liste des structures
+    </h2>
+    <div>
+        <a href="{% url 'eftp_non_formel:structure_create' %}" class="btn btn-success action-btn">
+            <i class="fas fa-plus-circle me-2"></i>
+            Nouvelle structure
+        </a>
+        <a href="{% url 'eftp_non_formel:import_export' %}" class="btn btn-info action-btn text-white">
+            <i class="fas fa-download me-2"></i>
+            Import/Export
         </a>
     </div>
-    
-    <div class="card">
-        <div class="card-body">
-            <p class="text-muted text-center py-4">
-                <i class="fas fa-info-circle fa-2x mb-3"></i><br>
-                Liste des structures à venir...
-            </p>
+</div>
+
+<!-- Statistiques -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted">Total structures</h6>
+                        <h2 class="mb-0">{{ structures|length }}</h2>
+                    </div>
+                    <div class="icon text-success">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted">Publiques</h6>
+                        <h2 class="mb-0">{{ publiques_count }}</h2>
+                    </div>
+                    <div class="icon text-primary">
+                        <i class="fas fa-university"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted">Privées</h6>
+                        <h2 class="mb-0">{{ privees_count }}</h2>
+                    </div>
+                    <div class="icon text-warning">
+                        <i class="fas fa-building"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted">Apprentis</h6>
+                        <h2 class="mb-0">0</h2>
+                    </div>
+                    <div class="icon text-info">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            <i class="fas fa-search me-2"></i>
+            Filtres
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" class="form-control" name="search" placeholder="Rechercher..." value="{{ request.GET.search }}">
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="region">
+                    <option value="">Toutes les régions</option>
+                    {% for region in regions %}
+                        <option value="{{ region.id }}">{{ region.nom }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" name="type">
+                    <option value="">Tous les types</option>
+                    {% for value, label in type_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="fas fa-filter"></i> Filtrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Liste des structures -->
+<div class="card">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">Structures non formelles</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Sigle</th>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                        <th>Région</th>
+                        <th>Zone</th>
+                        <th>Complétude</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for structure in structures %}
+                    <tr>
+                        <td><strong>{{ structure.code }}</strong></td>
+                        <td>{{ structure.sigle|default:"-" }}</td>
+                        <td>{{ structure.nom }}</td>
+                        <td>
+                            <span class="badge-structure">{{ structure.get_type_structure_display }}</span>
+                        </td>
+                        <td>
+                            {% if structure.statut == 'PUBLIC' %}
+                                <span class="badge bg-primary">Public</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Privé</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ structure.region.nom }}</td>
+                        <td>
+                            {% if structure.zone == 'URBAINE' %}
+                                <span class="badge bg-info">Urbain</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Rural</span>
+                            {% endif %}
+                        </td>
+                        <td style="width: 120px;">
+                            <div class="progress" title="{{ structure.get_completion_percentage }}% complété">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: {{ structure.get_completion_percentage }}%;"
+                                     aria-valuenow="{{ structure.get_completion_percentage }}" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    {{ structure.get_completion_percentage }}%
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'eftp_non_formel:structure_detail' structure.id %}" 
+                                   class="btn btn-info" title="Détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'eftp_non_formel:structure_complet' structure.id %}" 
+                                   class="btn btn-success" title="Saisie complète">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'eftp_non_formel:structure_edit' structure.id %}" 
+                                   class="btn btn-warning" title="Modifier">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <a href="{% url 'eftp_non_formel:structure_delete' structure.id %}" 
+                                   class="btn btn-danger" title="Supprimer"
+                                   onclick="return confirm('Supprimer cette structure ?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5">
+                            <i class="fas fa-tools fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">Aucune structure trouvée</h4>
+                            <a href="{% url 'eftp_non_formel:structure_create' %}" class="btn btn-success mt-3">
+                                <i class="fas fa-plus-circle me-2"></i>
+                                Créer la première structure
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

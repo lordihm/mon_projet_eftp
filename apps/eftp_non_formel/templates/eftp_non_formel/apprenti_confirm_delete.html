@@ -1,0 +1,52 @@
+{% extends 'eftp_non_formel/base_non_formel.html' %}
+
+{% block title %}Confirmer la suppression{% endblock %}
+
+{% block nonformel_content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmer la suppression
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">Êtes-vous sûr de vouloir supprimer ces données d'apprentis ?</p>
+                
+                <div class="alert alert-warning">
+                    <strong>Attention :</strong> Cette action est irréversible.
+                </div>
+                
+                <table class="table">
+                    <tr>
+                        <th>Secteur :</th>
+                        <td>{{ apprenti.get_secteur_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Durée :</th>
+                        <td>{{ apprenti.get_duree_apprentissage_display }}</td>
+                    </tr>
+                    <tr>
+                        <th>Effectifs :</th>
+                        <td>{{ apprenti.masculin }} M / {{ apprenti.feminin }} F</td>
+                    </tr>
+                </table>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{% url 'eftp_non_formel:structure_complet' structure.id %}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Confirmer la suppression
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,252 @@
+{% extends 'eftp_non_formel/base_non_formel.html' %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block nonformel_content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    {{ titre }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Cette étape permet de créer la structure avec les informations de base.
+                    Vous pourrez ensuite compléter toutes les autres données (infrastructures, équipements, etc.)
+                </div>
+                
+                <form method="post" id="structureForm">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Identification -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Identification</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.code.id_for_label }}" class="form-label">Code *</label>
+                                    {{ form.code }}
+                                    {% if form.code.errors %}
+                                        <div class="text-danger">{{ form.code.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.sigle.id_for_label }}" class="form-label">Sigle</label>
+                                    {{ form.sigle }}
+                                    {% if form.sigle.errors %}
+                                        <div class="text-danger">{{ form.sigle.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.statut.id_for_label }}" class="form-label">Statut *</label>
+                                    {{ form.statut }}
+                                </div>
+                                <div class="col-md-8 mb-3">
+                                    <label for="{{ form.nom.id_for_label }}" class="form-label">Nom complet *</label>
+                                    {{ form.nom }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.zone.id_for_label }}" class="form-label">Zone *</label>
+                                    {{ form.zone }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Type de structure -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Type de structure</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.type_structure.id_for_label }}" class="form-label">Type *</label>
+                                    {{ form.type_structure }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.autre_type_precision.id_for_label }}" class="form-label">Précision (si autre)</label>
+                                    {{ form.autre_type_precision }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Localisation -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Localisation</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.region.id_for_label }}" class="form-label">Région *</label>
+                                    {{ form.region }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.departement.id_for_label }}" class="form-label">Département *</label>
+                                    {{ form.departement }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.commune.id_for_label }}" class="form-label">Commune *</label>
+                                    {{ form.commune }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.quartier_village.id_for_label }}" class="form-label">Quartier/Village</label>
+                                    {{ form.quartier_village }}
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label for="{{ form.adresse.id_for_label }}" class="form-label">Adresse</label>
+                                    {{ form.adresse }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Document administratif -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Document administratif</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <div class="form-check">
+                                        {{ form.a_document }}
+                                        <label class="form-check-label" for="{{ form.a_document.id_for_label }}">
+                                            Dispose d'un document administratif
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.ministere_tutelle.id_for_label }}" class="form-label">Ministère de tutelle</label>
+                                    {{ form.ministere_tutelle }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.type_document.id_for_label }}" class="form-label">Type de document</label>
+                                    {{ form.type_document }}
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label for="{{ form.reference_document.id_for_label }}" class="form-label">Référence du document</label>
+                                    {{ form.reference_document }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dates et coordonnées -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Dates et coordonnées</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.date_autorisation.id_for_label }}" class="form-label">Date d'autorisation</label>
+                                    {{ form.date_autorisation }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.date_ouverture.id_for_label }}" class="form-label">Date d'ouverture</label>
+                                    {{ form.date_ouverture }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.longitude.id_for_label }}" class="form-label">Longitude</label>
+                                    {{ form.longitude }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.latitude.id_for_label }}" class="form-label">Latitude</label>
+                                    {{ form.latitude }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'eftp_non_formel:structure_list' %}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Créer la structure
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des selects dépendants
+    const regionSelect = document.getElementById('id_region');
+    const deptSelect = document.getElementById('id_departement');
+    const communeSelect = document.getElementById('id_commune');
+    const quartierSelect = document.getElementById('id_quartier_village');
+    
+    if (regionSelect) {
+        regionSelect.addEventListener('change', function() {
+            const regionId = this.value;
+            if (regionId) {
+                fetch(`/renaloc/get-departements/?region_id=${regionId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        deptSelect.innerHTML = '<option value="">---------</option>';
+                        data.departements.forEach(dept => {
+                            deptSelect.innerHTML += `<option value="${dept.id}">${dept.nom}</option>`;
+                        });
+                    });
+            }
+        });
+    }
+    
+    if (deptSelect) {
+        deptSelect.addEventListener('change', function() {
+            const deptId = this.value;
+            if (deptId) {
+                fetch(`/renaloc/get-communes/?departement_id=${deptId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        communeSelect.innerHTML = '<option value="">---------</option>';
+                        data.communes.forEach(commune => {
+                            communeSelect.innerHTML += `<option value="${commune.id}">${commune.nom}</option>`;
+                        });
+                    });
+            }
+        });
+    }
+    
+    if (communeSelect) {
+        communeSelect.addEventListener('change', function() {
+            const communeId = this.value;
+            if (communeId) {
+                fetch(`/renaloc/get-quartiers/?commune_id=${communeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        quartierSelect.innerHTML = '<option value="">---------</option>';
+                        data.quartiers.forEach(quartier => {
+                            quartierSelect.innerHTML += `<option value="${quartier.id}">${quartier.nom}</option>`;
+                        });
+                    });
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

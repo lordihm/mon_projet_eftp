@@ -1,0 +1,72 @@
+{% extends 'eftp_non_formel/base_non_formel.html' %}
+
+{% block title %}{{ structure.nom }}{% endblock %}
+
+{% block nonformel_content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-tools me-2"></i>
+                    {{ structure.nom }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr><th>Code :</th><td>{{ structure.code }}</td></tr>
+                            <tr><th>Sigle :</th><td>{{ structure.sigle|default:"-" }}</td></tr>
+                            <tr><th>Type :</th><td>{{ structure.get_type_structure_display }}</td></tr>
+                            <tr><th>Statut :</th><td>{{ structure.get_statut_display }}</td></tr>
+                            <tr><th>Zone :</th><td>{{ structure.get_zone_display }}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr><th>Région :</th><td>{{ structure.region.nom }}</td></tr>
+                            <tr><th>Département :</th><td>{{ structure.departement.nom }}</td></tr>
+                            <tr><th>Commune :</th><td>{{ structure.commune.nom }}</td></tr>
+                            <tr><th>Quartier :</th><td>{{ structure.quartier_village.nom|default:"-" }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'eftp_non_formel:structure_complet' structure.id %}" class="btn btn-success">
+                        <i class="fas fa-edit me-2"></i>Saisie complète
+                    </a>
+                    <a href="{% url 'eftp_non_formel:structure_edit' structure.id %}" class="btn btn-warning">
+                        <i class="fas fa-pen me-2"></i>Modifier
+                    </a>
+                    <a href="{% url 'eftp_non_formel:structure_delete' structure.id %}" class="btn btn-danger"
+                       onclick="return confirm('Supprimer cette structure ?')">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Statistiques</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Maîtres artisans :</strong> {{ total_maitres }}</p>
+                <p><strong>Apprentis :</strong> {{ total_apprentis }}</p>
+                <p><strong>Métiers :</strong> {{ total_metiers }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

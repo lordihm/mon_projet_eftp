@@ -1,0 +1,921 @@
+{% extends 'eftp_non_formel/base_non_formel.html' %}
+{% load static %}
+
+{% block title %}Tableau de bord - {{ structure.nom }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nav-tabs .nav-link {
+        color: #495057;
+        font-weight: 500;
+        padding: 12px 20px;
+        border: none;
+        border-bottom: 3px solid transparent;
+    }
+    .nav-tabs .nav-link:hover {
+        border-bottom-color: #28a745;
+    }
+    .nav-tabs .nav-link.active {
+        color: #28a745;
+        font-weight: 600;
+        border-bottom: 3px solid #28a745;
+        background: transparent;
+    }
+    .nav-tabs .nav-link i {
+        margin-right: 8px;
+    }
+    
+    .dashboard-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.2s;
+    }
+    .dashboard-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    .dashboard-card .card-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 10px 10px 0 0;
+        padding: 15px 20px;
+        font-weight: 600;
+    }
+    
+    .stat-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .bg-soft-success {
+        background: rgba(40,167,69,0.1);
+        color: #28a745;
+    }
+    .bg-soft-info {
+        background: rgba(23,162,184,0.1);
+        color: #17a2b8;
+    }
+    .bg-soft-warning {
+        background: rgba(255,193,7,0.1);
+        color: #ffc107;
+    }
+    
+    .structure-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+        border-radius: 0 0 20px 20px;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .info-item {
+        background: #f8f9fa;
+        padding: 10px 15px;
+        border-radius: 8px;
+        border-left: 4px solid #28a745;
+    }
+    .info-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+    .info-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}
+
+{% block nonformel_content %}
+<!-- En-tête de la structure -->
+<div class="structure-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1>
+                    <i class="fas fa-tools me-3"></i>
+                    {% if structure.sigle %}
+                        <span class="badge bg-light text-dark me-2">{{ structure.sigle }}</span>
+                    {% endif %}
+                    {{ structure.nom }}
+                </h1>
+                <p class="lead mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>
+                    {{ structure.region.nom }} > {{ structure.departement.nom }} > {{ structure.commune.nom }}
+                    {% if structure.quartier_village %} > {{ structure.quartier_village.nom }}{% endif %}
+                </p>
+                <p class="mt-2">
+                    <span class="badge bg-light text-dark me-2">Code: {{ structure.code }}</span>
+                    <span class="badge bg-primary me-2">{{ structure.get_type_structure_display }}</span>
+                    {% if structure.statut == 'PUBLIC' %}
+                        <span class="badge bg-success">Public</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Privé</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="btn-group">
+                    <a href="{% url 'eftp_non_formel:structure_list' %}" class="btn btn-light">
+                        <i class="fas fa-arrow-left me-2"></i>Retour
+                    </a>
+                    <a href="{% url 'eftp_non_formel:structure_edit' structure.id %}" class="btn btn-warning">
+                        <i class="fas fa-pen me-2"></i>Modifier
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Barre de progression globale -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="dashboard-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2 text-success"></i>
+                            Progression globale du dossier
+                        </h5>
+                        <span class="badge bg-success">{{ progression_globale }}%</span>
+                    </div>
+                    <div class="progress" style="height: 15px;">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ progression_globale }}%;" 
+                             aria-valuenow="{{ progression_globale }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Onglets de navigation -->
+    <ul class="nav nav-tabs" id="structureTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" 
+                    type="button" role="tab">
+                <i class="fas fa-info-circle"></i>Informations générales
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="maitres-tab" data-bs-toggle="tab" data-bs-target="#maitres" 
+                    type="button" role="tab">
+                <i class="fas fa-user-cog"></i>Maîtres artisans
+                <span class="badge bg-success ms-2">{{ maitres|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="apprentis-tab" data-bs-toggle="tab" data-bs-target="#apprentis" 
+                    type="button" role="tab">
+                <i class="fas fa-users"></i>Apprentis
+                <span class="badge bg-success ms-2">{{ apprentis|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="metiers-tab" data-bs-toggle="tab" data-bs-target="#metiers" 
+                    type="button" role="tab">
+                <i class="fas fa-hammer"></i>Métiers
+                <span class="badge bg-success ms-2">{{ metiers|length }}</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="infrastructures-tab" data-bs-toggle="tab" data-bs-target="#infrastructures" 
+                    type="button" role="tab">
+                <i class="fas fa-building"></i>Infrastructures
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="financement-tab" data-bs-toggle="tab" data-bs-target="#financement" 
+                    type="button" role="tab">
+                <i class="fas fa-coins"></i>Financement
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Contenu des onglets -->
+    <div class="tab-content p-4 bg-white border border-top-0 rounded-bottom">
+        
+        <!-- Onglet 1: Informations générales -->
+        <div class="tab-pane fade show active" id="info" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <i class="fas fa-id-card"></i> Identification
+                        </div>
+                        <div class="card-body">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Nom complet</div>
+                                    <div class="info-value">{{ structure.nom }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Sigle</div>
+                                    <div class="info-value">{{ structure.sigle|default:"-" }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Code</div>
+                                    <div class="info-value">{{ structure.code }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Type</div>
+                                    <div class="info-value">{{ structure.get_type_structure_display }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Statut</div>
+                                    <div class="info-value">{{ structure.get_statut_display }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Zone</div>
+                                    <div class="info-value">{{ structure.get_zone_display }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-calendar"></i> Dates importantes
+                        </div>
+                        <div class="card-body">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Autorisation</div>
+                                    <div class="info-value">{{ structure.date_autorisation|date:"d/m/Y"|default:"-" }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Ouverture</div>
+                                    <div class="info-value">{{ structure.date_ouverture|date:"d/m/Y"|default:"-" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <i class="fas fa-map-marker-alt"></i> Localisation
+                        </div>
+                        <div class="card-body">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-label">Région</div>
+                                    <div class="info-value">{{ structure.region.nom }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Département</div>
+                                    <div class="info-value">{{ structure.departement.nom }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Commune</div>
+                                    <div class="info-value">{{ structure.commune.nom }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Quartier</div>
+                                    <div class="info-value">{{ structure.quartier_village.nom|default:"-" }}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Adresse</div>
+                                    <div class="info-value">{{ structure.adresse|default:"-" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-file"></i> Document administratif
+                        </div>
+                        <div class="card-body">
+                            {% if structure.a_document %}
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <div class="info-label">Ministère de tutelle</div>
+                                        <div class="info-value">{{ structure.ministere_tutelle|default:"-" }}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Type de document</div>
+                                        <div class="info-value">{{ structure.type_document|default:"-" }}</div>
+                                    </div>
+                                    <div class="info-item">
+                                        <div class="info-label">Référence</div>
+                                        <div class="info-value">{{ structure.reference_document|default:"-" }}</div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">Aucun document administratif renseigné</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet 2: Maîtres artisans -->
+        <div class="tab-pane fade" id="maitres" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-user-cog me-2 text-success"></i>Maîtres artisans</h4>
+                <a href="{% url 'eftp_non_formel:maitre_create' structure.id %}" class="btn btn-success">
+                    <i class="fas fa-plus-circle me-2"></i>Ajouter un maître artisan
+                </a>
+            </div>
+            
+            {% if maitres %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nom & prénom</th>
+                                <th>Sexe</th>
+                                <th>Grade</th>
+                                <th>Nationalité</th>
+                                <th>Qualification</th>
+                                <th>Suivi</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for maitre in maitres %}
+                            <tr>
+                                <td><strong>{{ maitre.nom_prenom }}</strong></td>
+                                <td>{{ maitre.get_sexe_display }}</td>
+                                <td>{{ maitre.get_grade_display }}</td>
+                                <td>{{ maitre.get_nationalite_display }}</td>
+                                <td>
+                                    {% if maitre.qualification_certifiee %}
+                                        <span class="badge bg-success">Certifié</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non certifié</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if maitre.a_recu_suivi %}
+                                        <span class="badge bg-success">Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Non</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'eftp_non_formel:maitre_edit' maitre.id %}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'eftp_non_formel:maitre_delete' maitre.id %}" class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Supprimer ce maître artisan ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center p-5">
+                    <i class="fas fa-user-cog fa-4x mb-3"></i>
+                    <h5>Aucun maître artisan enregistré</h5>
+                    <a href="{% url 'eftp_non_formel:maitre_create' structure.id %}" class="btn btn-success mt-3">
+                        <i class="fas fa-plus-circle me-2"></i>Ajouter un maître artisan
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Onglet 3: Apprentis -->
+        <div class="tab-pane fade" id="apprentis" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-users me-2 text-success"></i>Apprentis</h4>
+                <a href="{% url 'eftp_non_formel:apprenti_create' structure.id %}" class="btn btn-success">
+                    <i class="fas fa-plus-circle me-2"></i>Ajouter des apprentis
+                </a>
+            </div>
+            
+            {% if apprentis %}
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-circle bg-soft-success mx-auto">
+                            {{ total_apprentis }}
+                        </div>
+                        <p class="text-center">Total apprentis</p>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-circle bg-soft-info mx-auto">
+                            {{ apprentis|length }}
+                        </div>
+                        <p class="text-center">Groupes</p>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Secteur</th>
+                                <th>Durée</th>
+                                <th>Masculin</th>
+                                <th>Féminin</th>
+                                <th>Total</th>
+                                <th>Inscrits M</th>
+                                <th>Inscrits F</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for apprenti in apprentis %}
+                            <tr>
+                                <td>{{ apprenti.get_secteur_display }}</td>
+                                <td>{{ apprenti.get_duree_apprentissage_display }}</td>
+                                <td>{{ apprenti.masculin }}</td>
+                                <td>{{ apprenti.feminin }}</td>
+                                <td><strong>{{ apprenti.masculin|add:apprenti.feminin }}</strong></td>
+                                <td>{{ apprenti.jeunes_inscrits_m }}</td>
+                                <td>{{ apprenti.jeunes_inscrits_f }}</td>
+                                <td>
+                                    <a href="{% url 'eftp_non_formel:apprenti_edit' apprenti.id %}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'eftp_non_formel:apprenti_delete' apprenti.id %}" class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Supprimer ces données ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center p-5">
+                    <i class="fas fa-users fa-4x mb-3"></i>
+                    <h5>Aucun apprenti enregistré</h5>
+                    <a href="{% url 'eftp_non_formel:apprenti_create' structure.id %}" class="btn btn-success mt-3">
+                        <i class="fas fa-plus-circle me-2"></i>Ajouter des apprentis
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Onglet 4: Métiers -->
+        <div class="tab-pane fade" id="metiers" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-hammer me-2 text-success"></i>Métiers enseignés</h4>
+                <a href="{% url 'eftp_non_formel:metier_create' structure.id %}" class="btn btn-success">
+                    <i class="fas fa-plus-circle me-2"></i>Ajouter un métier
+                </a>
+            </div>
+            
+            {% if metiers %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Métier</th>
+                                <th>Secteur</th>
+                                <th>Durée</th>
+                                <th>Promo I</th>
+                                <th>Promo II</th>
+                                <th>Promo III</th>
+                                <th>Total</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for metier in metiers %}
+                            <tr>
+                                <td><strong>{{ metier.nom_metier }}</strong></td>
+                                <td>{{ metier.get_secteur_display }}</td>
+                                <td>{{ metier.get_duree_apprentissage_display }}</td>
+                                <td>{{ metier.promo_1_m|add:metier.promo_1_f }}</td>
+                                <td>{{ metier.promo_2_m|add:metier.promo_2_f }}</td>
+                                <td>{{ metier.promo_3_m|add:metier.promo_3_f }}</td>
+                                <td><span class="badge bg-success">{{ metier.total_apprentis }}</span></td>
+                                <td>
+                                    <a href="{% url 'eftp_non_formel:metier_edit' metier.id %}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'eftp_non_formel:metier_delete' metier.id %}" class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Supprimer ce métier ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center p-5">
+                    <i class="fas fa-hammer fa-4x mb-3"></i>
+                    <h5>Aucun métier enregistré</h5>
+                    <a href="{% url 'eftp_non_formel:metier_create' structure.id %}" class="btn btn-success mt-3">
+                        <i class="fas fa-plus-circle me-2"></i>Ajouter un métier
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Onglet 5: Infrastructures -->
+        <div class="tab-pane fade" id="infrastructures" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <i class="fas fa-bolt"></i> Électricité
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item">
+                                <div class="info-label">Alimentation électrique</div>
+                                <div class="info-value">
+                                    {% if structure.a_electricite %}
+                                        <span class="badge bg-success">Oui</span>
+                                        {% if structure.source_electricite %}
+                                            <span class="badge bg-info">{{ structure.get_source_electricite_display }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-danger">Non</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-water"></i> Eau
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item">
+                                <div class="info-label">Point d'eau potable</div>
+                                <div class="info-value">
+                                    {% if structure.a_point_eau %}
+                                        <span class="badge bg-success">Oui</span>
+                                        {% if structure.source_eau %}
+                                            <span class="badge bg-info">{{ structure.get_source_eau_display }}</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="badge bg-danger">Non</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-toilet"></i> Latrines
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item">
+                                <div class="info-label">Latrines</div>
+                                <div class="info-value">
+                                    {% if structure.a_latrines %}
+                                        <span class="badge bg-success">Oui ({{ structure.nombre_latrines }} total)</span>
+                                        <div class="mt-2 small">
+                                            <div>Apprenants: {{ structure.latrines_apprenants }}</div>
+                                            <div>Filles: {{ structure.latrines_filles }}</div>
+                                            <div>Personnel: {{ structure.latrines_personnel }}</div>
+                                            <div>Handicapés: {{ structure.latrines_handicapes }}</div>
+                                        </div>
+                                    {% else %}
+                                        <span class="badge bg-danger">Non</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <i class="fas fa-globe"></i> Internet
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item">
+                                <div class="info-label">Connexion Internet</div>
+                                <div class="info-value">
+                                    {% if structure.a_connexion_internet %}
+                                        <span class="badge bg-success">Oui</span>
+                                        {% if structure.type_connexion %}
+                                            <span class="badge bg-info">{{ structure.get_type_connexion_display }}</span>
+                                        {% endif %}
+                                        <div class="mt-2">
+                                            <strong>Accès pour:</strong>
+                                            {% if structure.acces_internet %}
+                                                <ul class="mt-1">
+                                                {% for acces in structure.acces_internet %}
+                                                    <li>{{ acces }}</li>
+                                                {% endfor %}
+                                                </ul>
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <span class="badge bg-danger">Non</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-list"></i> Autres infrastructures
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="mb-2">
+                                        <i class="fas fa-{% if structure.a_cloture %}check-circle text-success{% else %}times-circle text-danger{% endif %} me-2"></i>
+                                        Clôture
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-{% if structure.a_infirmerie %}check-circle text-success{% else %}times-circle text-danger{% endif %} me-2"></i>
+                                        Infirmerie
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-{% if structure.a_boite_pharmacie %}check-circle text-success{% else %}times-circle text-danger{% endif %} me-2"></i>
+                                        Boîte à pharmacie
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-{% if structure.a_depotoir %}check-circle text-success{% else %}times-circle text-danger{% endif %} me-2"></i>
+                                        Dépotoir
+                                        {% if structure.a_depotoir %} ({{ structure.nombre_depotoirs }}){% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-2">
+                                        <i class="fas fa-{% if structure.a_rampes_handicapes %}check-circle text-success{% else %}times-circle text-danger{% endif %} me-2"></i>
+                                        Rampes handicapés
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-{% if structure.a_cour_recreation %}check-circle text-success{% else %}times-circle text-danger{% endif %} me-2"></i>
+                                        Cour de récréation
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-{% if structure.a_bibliotheque %}check-circle text-success{% else %}times-circle text-danger{% endif %} me-2"></i>
+                                        Bibliothèque
+                                    </div>
+                                    <div class="mb-2">
+                                        <i class="fas fa-{% if structure.a_terrain_sport %}check-circle text-success{% else %}times-circle text-danger{% endif %} me-2"></i>
+                                        Terrain de sport
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet 6: Financement -->
+        <div class="tab-pane fade" id="financement" role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <i class="fas fa-coins"></i> Sources de financement
+                        </div>
+                        <div class="card-body">
+                            {% if structure.source_financement %}
+                                <ul class="list-group">
+                                {% for source in structure.source_financement %}
+                                    <li class="list-group-item">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        {{ source }}
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">Aucune source de financement renseignée</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-hand-holding-heart"></i> Accompagnement
+                        </div>
+                        <div class="card-body">
+                            {% if structure.type_accompagnement %}
+                                <ul class="list-group">
+                                {% for accomp in structure.type_accompagnement %}
+                                    <li class="list-group-item">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        {{ accomp }}
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted">Aucun accompagnement renseigné</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <i class="fas fa-credit-card"></i> Modes de paiement
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item">
+                                <div class="info-label">Formation payante</div>
+                                <div class="info-value">
+                                    {% if structure.formation_payante %}
+                                        <span class="badge bg-success">Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if structure.mode_paiement %}
+                                <div class="mt-3">
+                                    <strong>Modes acceptés:</strong>
+                                    <ul class="mt-2">
+                                    {% for mode in structure.mode_paiement %}
+                                        <li>{{ mode }}</li>
+                                    {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="dashboard-card mt-3">
+                        <div class="card-header">
+                            <i class="fas fa-tag"></i> Régime
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item">
+                                <div class="info-label">Régime</div>
+                                <div class="info-value">{{ structure.get_regime_display }}</div>
+                            </div>
+                            <div class="info-item mt-2">
+                                <div class="info-label">Attestation de fin de formation</div>
+                                <div class="info-value">
+                                    {% if structure.delivre_attestation %}
+                                        <span class="badge bg-success">Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Non</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pied de page -->
+    <div class="row mt-4">
+        <div class="col-md-12 text-muted small">
+            <i class="fas fa-clock me-1"></i>
+            Dernière mise à jour : {{ structure.updated_at|date:"d/m/Y H:i"|default:"-" }}
+        </div>
+    </div>
+</div>
+
+<!-- Script unique pour la gestion des onglets et des mises à jour AJAX -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ========== 1. GESTION DES ONGLETS ==========
+    // Sauvegarde de l'onglet actif
+    var tabs = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabs.forEach(function(tab) {
+        tab.addEventListener('shown.bs.tab', function(event) {
+            sessionStorage.setItem('activeNonFormelTab', event.target.id);
+        });
+    });
+    
+    var activeTab = sessionStorage.getItem('activeNonFormelTab');
+    if (activeTab) {
+        var tab = document.getElementById(activeTab);
+        if (tab) {
+            new bootstrap.Tab(tab).show();
+        }
+    }
+    
+    // ========== 2. MISE À JOUR AJAX DES DONNÉES ==========
+    const jsonUrl = '{% url "eftp_non_formel:structure_complet_json" structure.id %}';
+    
+    // Fonction pour mettre à jour les données
+    function updateDashboardData() {
+        console.log('🔄 Mise à jour des données...');
+        
+        fetch(jsonUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erreur réseau');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Données reçues:', data);
+                
+                // Mettre à jour le total des apprentis
+                const totalElements = document.querySelectorAll('#apprentis .stat-circle');
+                totalElements.forEach(el => {
+                    if (el.textContent.trim() !== data.total_apprentis.toString()) {
+                        el.textContent = data.total_apprentis;
+                        el.classList.add('bg-soft-success');
+                    }
+                });
+                
+                // Mettre à jour le badge de l'onglet Apprentis
+                const apprentisBadge = document.querySelector('#apprentis-tab .badge');
+                if (apprentisBadge) {
+                    apprentisBadge.textContent = data.apprentis_count;
+                }
+                
+                // Mettre à jour le badge de l'onglet Maîtres
+                const maitresBadge = document.querySelector('#maitres-tab .badge');
+                if (maitresBadge && data.maitres_count !== undefined) {
+                    maitresBadge.textContent = data.maitres_count;
+                }
+                
+                // Mettre à jour le badge de l'onglet Métiers
+                const metiersBadge = document.querySelector('#metiers-tab .badge');
+                if (metiersBadge && data.metiers_count !== undefined) {
+                    metiersBadge.textContent = data.metiers_count;
+                }
+                
+                // Afficher une notification discrète
+                const toast = document.createElement('div');
+                toast.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 end-0 m-3';
+                toast.style.zIndex = '9999';
+                toast.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>
+                    Données mises à jour
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(toast);
+                
+                // Disparaître après 2 secondes
+                setTimeout(() => {
+                    toast.remove();
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('❌ Erreur:', error);
+            });
+    }
+    
+    // Mettre à jour quand l'onglet Apprentis est activé
+    const apprentisTab = document.getElementById('apprentis-tab');
+    if (apprentisTab) {
+        apprentisTab.addEventListener('shown.bs.tab', function() {
+            updateDashboardData();
+        });
+    }
+    
+    // Mettre à jour aussi pour les autres onglets (optionnel)
+    const maitresTab = document.getElementById('maitres-tab');
+    if (maitresTab) {
+        maitresTab.addEventListener('shown.bs.tab', function() {
+            updateDashboardData();
+        });
+    }
+    
+    const metiersTab = document.getElementById('metiers-tab');
+    if (metiersTab) {
+        metiersTab.addEventListener('shown.bs.tab', function() {
+            updateDashboardData();
+        });
+    }
+    
+    // Mettre à jour aussi quand on revient sur la page
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            const activePane = document.querySelector('.tab-pane.active');
+            if (activePane && (activePane.id === 'apprentis' || activePane.id === 'maitres' || activePane.id === 'metiers')) {
+                updateDashboardData();
+            }
+        }
+    });
+    
+    // Debug: Afficher le total initial
+    console.log('📊 Total apprentis initial: {{ total_apprentis }}');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,158 @@
+{% extends 'eftp_non_formel/base_non_formel.html' %}
+{% load static %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block nonformel_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    {{ titre }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.secteur.id_for_label }}" class="form-label">Secteur *</label>
+                            {{ form.secteur }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.duree_apprentissage.id_for_label }}" class="form-label">Durée d'apprentissage *</label>
+                            {{ form.duree_apprentissage }}
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Effectifs</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.masculin.id_for_label }}" class="form-label">Masculin</label>
+                                    {{ form.masculin }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.feminin.id_for_label }}" class="form-label">Féminin</label>
+                                    {{ form.feminin }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Jeunes accompagnés (pour plateformes)</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.jeunes_inscrits_m.id_for_label }}" class="form-label">Inscrits M</label>
+                                    {{ form.jeunes_inscrits_m }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.jeunes_inscrits_f.id_for_label }}" class="form-label">Inscrits F</label>
+                                    {{ form.jeunes_inscrits_f }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label text-muted">Total</label>
+                                    <input type="text" class="form-control" id="total_inscrits" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.places_m.id_for_label }}" class="form-label">Placés M</label>
+                                    {{ form.places_m }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.places_f.id_for_label }}" class="form-label">Placés F</label>
+                                    {{ form.places_f }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label text-muted">Total</label>
+                                    <input type="text" class="form-control" id="total_places" readonly>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.outilles_m.id_for_label }}" class="form-label">Outillés M</label>
+                                    {{ form.outilles_m }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.outilles_f.id_for_label }}" class="form-label">Outillés F</label>
+                                    {{ form.outilles_f }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label text-muted">Total</label>
+                                    <input type="text" class="form-control" id="total_outilles" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'eftp_non_formel:structure_complet' structure.id %}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calcul automatique des totaux
+document.addEventListener('DOMContentLoaded', function() {
+    function updateTotals() {
+        // Total inscrits
+        let inscritsM = parseInt(document.getElementById('id_jeunes_inscrits_m').value) || 0;
+        let inscritsF = parseInt(document.getElementById('id_jeunes_inscrits_f').value) || 0;
+        document.getElementById('total_inscrits').value = inscritsM + inscritsF;
+        
+        // Total placés
+        let placesM = parseInt(document.getElementById('id_places_m').value) || 0;
+        let placesF = parseInt(document.getElementById('id_places_f').value) || 0;
+        document.getElementById('total_places').value = placesM + placesF;
+        
+        // Total outillés
+        let outillesM = parseInt(document.getElementById('id_outilles_m').value) || 0;
+        let outillesF = parseInt(document.getElementById('id_outilles_f').value) || 0;
+        document.getElementById('total_outilles').value = outillesM + outillesF;
+    }
+    
+    // Ajouter les écouteurs d'événements
+    ['id_jeunes_inscrits_m', 'id_jeunes_inscrits_f', 'id_places_m', 'id_places_f', 
+     'id_outilles_m', 'id_outilles_f'].forEach(function(id) {
+        let input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', updateTotals);
+        }
+    });
+    
+    // Initialiser les totaux
+    updateTotals();
+});
+</script>
+{% endblock %}
