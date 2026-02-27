@@ -1,4 +1,5 @@
 {% extends 'eftp_formel/base_formel.html' %}
+{% load static %}
 
 {% block title %}Liste des établissements formels{% endblock %}
 
@@ -9,11 +10,11 @@
         Liste des établissements
     </h2>
     <div>
-        <a href="{% url 'eftp_formel:etablissement_create' %}" class="btn btn-primary action-btn">
+        <a href="{% url 'eftp_formel:etablissement_create' %}" class="btn btn-primary">
             <i class="fas fa-plus-circle me-2"></i>
             Nouvel établissement
         </a>
-        <a href="{% url 'eftp_formel:import_export' %}" class="btn btn-info action-btn text-white">
+        <a href="{% url 'eftp_formel:import_export' %}" class="btn btn-info text-white">
             <i class="fas fa-download me-2"></i>
             Import/Export
         </a>
@@ -23,251 +24,133 @@
 <!-- Statistiques -->
 <div class="row mb-4">
     <div class="col-md-3">
-        <div class="card stat-card bg-primary text-white">
+        <div class="card text-white bg-primary">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Total établissements</h6>
-                        <h2 class="mb-0">{{ etablissements|length }}</h2>
-                    </div>
-                    <i class="fas fa-school fa-3x opacity-50"></i>
-                </div>
+                <h5 class="card-title">Total</h5>
+                <h2 class="mb-0">{{ etablissements|length }}</h2>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card bg-success text-white">
+        <div class="card text-white bg-success">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Publics</h6>
-                        <h2 class="mb-0">{{ publics_count }}</h2>
-                    </div>
-                    <i class="fas fa-university fa-3x opacity-50"></i>
-                </div>
+                <h5 class="card-title">Publics</h5>
+                <h2 class="mb-0">{{ publics_count }}</h2>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card bg-warning text-white">
+        <div class="card text-white bg-warning">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Privés</h6>
-                        <h2 class="mb-0">{{ prives_count }}</h2>
-                    </div>
-                    <i class="fas fa-building fa-3x opacity-50"></i>
-                </div>
+                <h5 class="card-title">Privés</h5>
+                <h2 class="mb-0">{{ prives_count }}</h2>
             </div>
         </div>
     </div>
     <div class="col-md-3">
-        <div class="card stat-card bg-info text-white">
+        <div class="card text-white bg-info">
             <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-title">Total apprenants</h6>
-                        <h2 class="mb-0">{{ total_apprenants }}</h2>
-                    </div>
-                    <i class="fas fa-users fa-3x opacity-50"></i>
-                </div>
+                <h5 class="card-title">Apprenants</h5>
+                <h2 class="mb-0">{{ total_apprenants }}</h2>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Filtres et recherche -->
-<div class="card mb-4">
-    <div class="card-header bg-light">
-        <h5 class="mb-0">
-            <i class="fas fa-search me-2"></i>
-            Filtres de recherche
-        </h5>
-    </div>
-    <div class="card-body">
-        <form method="get" class="row g-3">
-            <div class="col-md-4">
-                <label for="search" class="form-label">Recherche</label>
-                <input type="text" class="form-control" id="search" name="search" 
-                       placeholder="Nom, code, région..." value="{{ request.GET.search }}">
-            </div>
-            <div class="col-md-3">
-                <label for="region" class="form-label">Région</label>
-                <select class="form-select" id="region" name="region">
-                    <option value="">Toutes les régions</option>
-                    {% for region in regions %}
-                        <option value="{{ region.id }}" {% if request.GET.region == region.id|stringformat:"s" %}selected{% endif %}>
-                            {{ region.nom }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label for="statut" class="form-label">Statut</label>
-                <select class="form-select" id="statut" name="statut">
-                    <option value="">Tous</option>
-                    <option value="PUBLIC" {% if request.GET.statut == 'PUBLIC' %}selected{% endif %}>Public</option>
-                    <option value="PRIVE" {% if request.GET.statut == 'PRIVE' %}selected{% endif %}>Privé</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label for="type" class="form-label">Type</label>
-                <select class="form-select" id="type" name="type">
-                    <option value="">Tous</option>
-                    {% for value, label in type_choices %}
-                        <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-1 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="fas fa-filter"></i>
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Liste des établissements -->
+<!-- Liste -->
 <div class="card">
-    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">
-            <i class="fas fa-school me-2"></i>
-            Établissements ({{ page_obj.paginator.count }})
-        </h5>
-        <div class="btn-group">
-            <a href="?export=csv" class="btn btn-sm btn-success">
-                <i class="fas fa-file-csv"></i> CSV
-            </a>
-            <a href="?export=excel" class="btn btn-sm btn-success">
-                <i class="fas fa-file-excel"></i> Excel
-            </a>
-            <a href="?export=pdf" class="btn btn-sm btn-danger">
-                <i class="fas fa-file-pdf"></i> PDF
-            </a>
-        </div>
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">Établissements formels</h5>
     </div>
     <div class="card-body">
-        {% if etablissements %}
-            <div class="table-responsive">
-                <table class="table table-hover table-striped">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Code</th>
-                            <th>Nom</th>
-                            <th>Statut</th>
-                            <th>Région</th>
-                            <th>Département</th>
-                            <th>Type</th>
-                            <th>Zone</th>
-                            <th>Apprenants</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for etablissement in etablissements %}
-                        <tr>
-                            <td><strong>{{ etablissement.code }}</strong></td>
-                            <td>{{ etablissement.nom }}</td>
-                            <td>
-                                {% if etablissement.statut == 'PUBLIC' %}
-                                    <span class="badge bg-success">Public</span>
-                                {% else %}
-                                    <span class="badge bg-warning text-dark">Privé</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ etablissement.region.nom }}</td>
-                            <td>{{ etablissement.departement.nom }}</td>
-                            <td>{{ etablissement.get_type_etablissement_display }}</td>
-                            <td>
-                                {% if etablissement.zone == 'URBAINE' %}
-                                    <span class="badge bg-info">Urbain</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">Rural</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <span class="badge bg-primary rounded-pill">
-                                    {{ etablissement.apprenants.count }}
-                                </span>
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{% url 'eftp_formel:etablissement_detail' etablissement.id %}" 
-                                       class="btn btn-info" title="Voir détails">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{% url 'eftp_formel:etablissement_edit' etablissement.id %}" 
-                                       class="btn btn-warning" title="Modifier">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="{% url 'eftp_formel:etablissement_delete' etablissement.id %}" 
-                                       class="btn btn-danger" title="Supprimer"
-                                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet établissement ?')">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Code</th>
+                        <th>Sigle</th>
+                        <th>Nom</th>
+                        <th>Statut</th>
+                        <th>Région</th>
+                        <th>Type</th>
+                        <th>Zone</th>
+                        <th>Complétude</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for etablissement in etablissements %}
+                    <tr>
+                        <td><strong>{{ etablissement.code }}</strong></td>
+                        <td>{{ etablissement.sigle|default:"-" }}</td>
+                        <td>{{ etablissement.nom }}</td>
+                        <td>
+                            {% if etablissement.statut == 'PUBLIC' %}
+                                <span class="badge bg-success">Public</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Privé</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ etablissement.region.nom }}</td>
+                        <td>{{ etablissement.get_type_etablissement_display }}</td>
+                        <td>
+                            {% if etablissement.zone == 'URBAINE' %}
+                                <span class="badge bg-info">Urbain</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Rural</span>
+                            {% endif %}
+                        </td>
+                        <!-- NOUVELLE COLONNE DE PROGRESSION - À INSÉRER ICI -->
+                        <td>
+                            {% with total_champs=etablissement.get_completion_percentage %}
+                                <div class="progress" style="height: 20px;" title="{{ total_champs }}% complété">
+                                    <div class="progress-bar bg-{% if total_champs >= 80 %}success{% elif total_champs >= 50 %}warning{% else %}danger{% endif %}" 
+                                        role="progressbar" 
+                                        style="width: {{ total_champs }}%;" 
+                                        aria-valuenow="{{ total_champs }}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                        {{ total_champs }}%
+                                    </div>
                                 </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination -->
-            {% if page_obj.paginator.num_pages > 1 %}
-            <nav aria-label="Page navigation" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}" aria-label="Premier">
-                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            {% endwith %}
+                        </td>
+                        <!-- FIN DE LA NOUVELLE COLONNE -->
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'eftp_formel:etablissement_detail' etablissement.id %}" 
+                                class="btn btn-info" title="Voir détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'eftp_formel:etablissement_complet' etablissement.id %}" 
+                                class="btn btn-success" title="Saisie complète">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'eftp_formel:etablissement_edit' etablissement.id %}" 
+                                class="btn btn-warning" title="Modifier">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                <a href="{% url 'eftp_formel:etablissement_delete' etablissement.id %}" 
+                                class="btn btn-danger" title="Supprimer"
+                                onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet établissement ?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <i class="fas fa-school fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Aucun établissement trouvé</p>
+                            <a href="{% url 'eftp_formel:etablissement_create' %}" class="btn btn-primary">
+                                Créer le premier établissement
                             </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}" aria-label="Précédent">
-                                <span aria-hidden="true">&laquo;</span>
-                            </a>
-                        </li>
-                    {% endif %}
-                    
-                    {% for num in page_obj.paginator.page_range %}
-                        {% if page_obj.number == num %}
-                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}">{{ num }}</a>
-                            </li>
-                        {% endif %}
+                        </td>
+                    </tr>
                     {% endfor %}
-                    
-                    {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}" aria-label="Suivant">
-                                <span aria-hidden="true">&raquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.statut %}&statut={{ request.GET.statut }}{% endif %}" aria-label="Dernier">
-                                <span aria-hidden="true">&raquo;&raquo;</span>
-                            </a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </nav>
-            {% endif %}
-            
-        {% else %}
-            <div class="text-center py-5">
-                <i class="fas fa-school fa-4x text-muted mb-3"></i>
-                <h4 class="text-muted">Aucun établissement trouvé</h4>
-                <p>Commencez par créer votre premier établissement formel.</p>
-                <a href="{% url 'eftp_formel:etablissement_create' %}" class="btn btn-primary">
-                    <i class="fas fa-plus-circle me-2"></i>
-                    Créer un établissement
-                </a>
-            </div>
-        {% endif %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

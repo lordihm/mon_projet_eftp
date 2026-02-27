@@ -1,41 +1,49 @@
 from django.db import models
 from apps.renaloc.models import Region, Departement, Commune, QuartierVillage
 
+from django.db import models
+from apps.renaloc.models import Region, Departement, Commune, QuartierVillage
+
 class EtablissementFormel(models.Model):
     # Identification
-    nom = models.CharField(max_length=200)
-    code = models.CharField(max_length=10, unique=True)
+    nom = models.CharField(max_length=200, verbose_name="Nom de l'établissement")
+    sigle = models.CharField(max_length=20, blank=True, verbose_name="Sigle", 
+                            help_text="Ex: IAT, ENAM, LP, LT, CFPT...")
+    code = models.CharField(max_length=10, unique=True, verbose_name="Code")
     
     STATUT_CHOICES = [
         ('PUBLIC', 'Public'),
         ('PRIVE', 'Privé'),
     ]
-    statut = models.CharField(max_length=20, choices=STATUT_CHOICES)
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, verbose_name="Statut")
     
     ZONE_CHOICES = [
         ('URBAINE', 'Urbaine'),
         ('RURALE', 'Rurale'),
     ]
-    zone = models.CharField(max_length=20, choices=ZONE_CHOICES)
+    zone = models.CharField(max_length=20, choices=ZONE_CHOICES, verbose_name="Zone")
     
     # Localisation administrative
-    region = models.ForeignKey(Region, on_delete=models.PROTECT)
-    departement = models.ForeignKey(Departement, on_delete=models.PROTECT)
-    commune = models.ForeignKey(Commune, on_delete=models.PROTECT)
-    quartier_village = models.ForeignKey(QuartierVillage, on_delete=models.PROTECT)
-    adresse = models.CharField(max_length=255, blank=True)
+    region = models.ForeignKey(Region, on_delete=models.PROTECT, verbose_name="Région")
+    departement = models.ForeignKey(Departement, on_delete=models.PROTECT, verbose_name="Département")
+    commune = models.ForeignKey(Commune, on_delete=models.PROTECT, verbose_name="Commune")
+    quartier_village = models.ForeignKey(QuartierVillage, on_delete=models.PROTECT, null=True, blank=True, 
+                                        verbose_name="Quartier/Village")
+    adresse = models.CharField(max_length=255, blank=True, verbose_name="Adresse")
     
     # Localisation pédagogique
     dre = models.CharField(max_length=100, blank=True, verbose_name="DRE/FT/P")
     ipde = models.CharField(max_length=100, blank=True, verbose_name="IPDE/FT/P")
     
     # Dates
-    date_autorisation = models.DateField(null=True, blank=True)
-    date_ouverture = models.DateField(null=True, blank=True)
+    date_autorisation = models.DateField(null=True, blank=True, verbose_name="Date d'autorisation")
+    date_ouverture = models.DateField(null=True, blank=True, verbose_name="Date d'ouverture")
     
     # Coordonnées
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, 
+                                   verbose_name="Longitude")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, 
+                                  verbose_name="Latitude")
     
     # Type d'établissement
     TYPE_ETABLISSEMENT_CHOICES = [
@@ -56,8 +64,10 @@ class EtablissementFormel(models.Model):
         ('CENTRE_MUSEE', 'Centre éducatif du musée national'),
         ('CFJA', 'CFJA'),
         ('CFMAA', 'CFMAA'),
+        ('AUTRE', 'Autre'),
     ]
-    type_etablissement = models.CharField(max_length=20, choices=TYPE_ETABLISSEMENT_CHOICES)
+    type_etablissement = models.CharField(max_length=20, choices=TYPE_ETABLISSEMENT_CHOICES, 
+                                         verbose_name="Type d'établissement")
     
     # Cycles
     cycle_base_1 = models.BooleanField(default=False, verbose_name="Base 1 (CQP)")
@@ -70,24 +80,57 @@ class EtablissementFormel(models.Model):
         ('INTERNAT', 'Internat'),
         ('EXTERNAT', 'Externat'),
     ]
-    regime = models.CharField(max_length=20, choices=REGIME_CHOICES)
-    internat_fonctionnel = models.BooleanField(null=True, blank=True)
+    regime = models.CharField(max_length=20, choices=REGIME_CHOICES, verbose_name="Régime")
+    internat_fonctionnel = models.BooleanField(null=True, blank=True, verbose_name="Internat fonctionnel")
     
     # Autres informations
-    patrimoine_foncier = models.CharField(max_length=50, blank=True)
-    ministere_tutelle = models.CharField(max_length=100, blank=True)
-    type_formation = models.CharField(max_length=50, blank=True)
-    dispositif_orientation = models.BooleanField(default=False)
+    patrimoine_foncier = models.CharField(max_length=50, blank=True, verbose_name="Patrimoine foncier")
+    ministere_tutelle = models.CharField(max_length=100, blank=True, verbose_name="Ministère de tutelle")
+    type_formation = models.CharField(max_length=50, blank=True, verbose_name="Type de formation")
+    dispositif_orientation = models.BooleanField(default=False, verbose_name="Dispositif d'orientation")
     
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Date de modification")
     
     class Meta:
+        ordering = ['code']
         verbose_name = "Établissement formel"
         verbose_name_plural = "Établissements formels"
     
     def __str__(self):
-        return f"{self.nom} - {self.code}"
+        if self.sigle:
+            return f"{self.sigle} - {self.nom}"
+        return f"{self.nom}"
+
+    def get_completion_percentage(self):
+        """Calcule le pourcentage de complétude de l'établissement"""
+        # Liste des champs importants à vérifier
+        important_fields = [
+            'nom', 'code', 'statut', 'zone', 'region', 'departement', 'commune',
+            'type_etablissement', 'regime', 'date_autorisation', 'date_ouverture',
+            'dre', 'ipde', 'longitude', 'latitude', 'patrimoine_foncier',
+            'ministere_tutelle', 'type_formation'
+        ]
+        
+        # Compter les champs remplis
+        filled = 0
+        for field in important_fields:
+            value = getattr(self, field)
+            if value not in [None, '', False]:
+                filled += 1
+        
+        # Ajouter les cycles
+        cycles = ['cycle_base_1', 'cycle_base_2', 'cycle_moyen_1', 'cycle_moyen_2']
+        for cycle in cycles:
+            if getattr(self, cycle):
+                filled += 1
+        
+        total_fields = len(important_fields) + len(cycles)
+        return int((filled / total_fields) * 100) if total_fields > 0 else 0
+    
+    def has_complete_data(self):
+        """Vérifie si l'établissement a des données complètes"""
+        return self.get_completion_percentage() >= 80
 
 class ApprenantFormel(models.Model):
     etablissement = models.ForeignKey(EtablissementFormel, on_delete=models.CASCADE, related_name='apprenants')

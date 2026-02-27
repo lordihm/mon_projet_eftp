@@ -26,7 +26,33 @@ def admin_stats(request):
         'quartiers': QuartierVillage.objects.count(),
     }
     return JsonResponse(stats)
+@staff_member_required
+def get_departements(request):
+    """Vue pour obtenir les départements d'une région"""
+    region_id = request.GET.get('region_id')
+    if region_id:
+        departements = Departement.objects.filter(region_id=region_id).values('id', 'nom', 'code')
+        return JsonResponse({'departements': list(departements)})
+    return JsonResponse({'departements': []})
 
+@staff_member_required
+def get_communes(request):
+    """Vue pour obtenir les communes d'un département"""
+    departement_id = request.GET.get('departement_id')
+    if departement_id:
+        communes = Commune.objects.filter(departement_id=departement_id).values('id', 'nom', 'code')
+        return JsonResponse({'communes': list(communes)})
+    return JsonResponse({'communes': []})
+
+@staff_member_required
+def get_quartiers(request):
+    """Vue pour obtenir les quartiers d'une commune"""
+    commune_id = request.GET.get('commune_id')
+    if commune_id:
+        quartiers = QuartierVillage.objects.filter(commune_id=commune_id).values('id', 'nom', 'code')
+        return JsonResponse({'quartiers': list(quartiers)})
+    return JsonResponse({'quartiers': []})
+    
 @staff_member_required
 def get_communes(request):
     """Vue pour obtenir les communes d'un département"""

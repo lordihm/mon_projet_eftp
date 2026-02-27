@@ -1,0 +1,393 @@
+{% extends 'eftp_formel/base_formel.html' %}
+{% load static %}
+
+{% block title %}Tableau de bord - {{ etablissement.nom }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nav-tabs .nav-link {
+        color: #495057;
+        font-weight: 500;
+    }
+    .nav-tabs .nav-link.active {
+        color: #007bff;
+        font-weight: 600;
+        border-bottom: 3px solid #007bff;
+    }
+    .tab-content {
+        background: white;
+        padding: 20px;
+        border: 1px solid #dee2e6;
+        border-top: none;
+        border-radius: 0 0 5px 5px;
+    }
+    .section-card {
+        margin-bottom: 20px;
+        border-left: 4px solid #007bff;
+    }
+    .section-card .card-header {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    .stat-badge {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+    }
+</style>
+{% endblock %}
+
+{% block formel_content %}
+<!-- DEBUG: Template etablissement_dashboard.html chargé -->
+<div class="alert alert-info" style="display: none;">
+    Template dashboard chargé pour {{ etablissement.nom }}
+</div>
+<div class="container-fluid">
+    <!-- En-tête avec informations de base -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>
+                <i class="fas fa-school text-primary me-2"></i>
+                {% if etablissement.sigle %}[{{ etablissement.sigle }}] {% endif %}
+                {{ etablissement.nom }}
+                <small class="text-muted">({{ etablissement.code }})</small>
+            </h2>
+            <p class="text-muted">
+                <i class="fas fa-map-marker-alt me-2"></i>
+                {{ etablissement.region.nom }} > {{ etablissement.departement.nom }} > {{ etablissement.commune.nom }}
+                {% if etablissement.quartier_village %} > {{ etablissement.quartier_village.nom }}{% endif %}
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group">
+                <a href="{% url 'eftp_formel:etablissement_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+                <a href="{% url 'eftp_formel:etablissement_edit' etablissement.id %}" class="btn btn-warning">
+                    <i class="fas fa-pen"></i> Modifier
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Barre de progression globale -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6>Progression globale du dossier</h6>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar progress-bar-striped bg-success" 
+                             role="progressbar" 
+                             style="width: {{ progression_globale }}%;" 
+                             aria-valuenow="{{ progression_globale }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ progression_globale }}% Complété
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Onglets de navigation -->
+    <ul class="nav nav-tabs" id="etablissementTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" 
+                    type="button" role="tab" aria-controls="info" aria-selected="true">
+                <i class="fas fa-info-circle me-2"></i>Informations générales
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="apprenants-tab" data-bs-toggle="tab" data-bs-target="#apprenants" 
+                    type="button" role="tab" aria-controls="apprenants" aria-selected="false">
+                <i class="fas fa-users me-2"></i>Apprenants
+                <span class="badge bg-primary ms-2">{{ total_apprenants }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="formateurs-tab" data-bs-toggle="tab" data-bs-target="#formateurs" 
+                    type="button" role="tab" aria-controls="formateurs" aria-selected="false">
+                <i class="fas fa-chalkboard-teacher me-2"></i>Formateurs
+                <span class="badge bg-primary ms-2">{{ total_formateurs }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="filieres-tab" data-bs-toggle="tab" data-bs-target="#filieres" 
+                    type="button" role="tab" aria-controls="filieres" aria-selected="false">
+                <i class="fas fa-book-open me-2"></i>Filières
+                <span class="badge bg-primary ms-2">{{ total_filieres }}</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="infrastructures-tab" data-bs-toggle="tab" data-bs-target="#infrastructures" 
+                    type="button" role="tab" aria-controls="infrastructures" aria-selected="false">
+                <i class="fas fa-building me-2"></i>Infrastructures
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="equipements-tab" data-bs-toggle="tab" data-bs-target="#equipements" 
+                    type="button" role="tab" aria-controls="equipements" aria-selected="false">
+                <i class="fas fa-tools me-2"></i>Équipements
+            </button>
+        </li>
+    </ul>
+    
+    <!-- Contenu des onglets -->
+    <div class="tab-content" id="etablissementTabsContent">
+        
+        <!-- Onglet 1: Informations générales -->
+        <div class="tab-pane fade show active" id="info" role="tabpanel" aria-labelledby="info-tab">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card section-card">
+                        <div class="card-header">
+                            <i class="fas fa-id-card me-2"></i>Identification
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr><th>Nom complet</th><td>{{ etablissement.nom }}</td></tr>
+                                <tr><th>Sigle</th><td>{{ etablissement.sigle|default:"-" }}</td></tr>
+                                <tr><th>Code</th><td>{{ etablissement.code }}</td></tr>
+                                <tr><th>Statut</th><td>{{ etablissement.get_statut_display }}</td></tr>
+                                <tr><th>Type</th><td>{{ etablissement.get_type_etablissement_display }}</td></tr>
+                                <tr><th>Zone</th><td>{{ etablissement.get_zone_display }}</td></tr>
+                                <tr><th>Régime</th><td>{{ etablissement.get_regime_display }}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card section-card">
+                        <div class="card-header">
+                            <i class="fas fa-map-marker-alt me-2"></i>Localisation
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr><th>Région</th><td>{{ etablissement.region.nom }}</td></tr>
+                                <tr><th>Département</th><td>{{ etablissement.departement.nom }}</td></tr>
+                                <tr><th>Commune</th><td>{{ etablissement.commune.nom }}</td></tr>
+                                <tr><th>Quartier/Village</th><td>{{ etablissement.quartier_village.nom|default:"-" }}</td></tr>
+                                <tr><th>Adresse</th><td>{{ etablissement.adresse|default:"-" }}</td></tr>
+                                <tr><th>DRE/FT/P</th><td>{{ etablissement.dre|default:"-" }}</td></tr>
+                                <tr><th>IPDE/FT/P</th><td>{{ etablissement.ipde|default:"-" }}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card section-card">
+                        <div class="card-header">
+                            <i class="fas fa-calendar me-2"></i>Dates et coordonnées
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr><th>Date autorisation</th><td>{{ etablissement.date_autorisation|date:"d/m/Y"|default:"-" }}</td></tr>
+                                <tr><th>Date ouverture</th><td>{{ etablissement.date_ouverture|date:"d/m/Y"|default:"-" }}</td></tr>
+                                <tr><th>Longitude</th><td>{{ etablissement.longitude|default:"-" }}</td></tr>
+                                <tr><th>Latitude</th><td>{{ etablissement.latitude|default:"-" }}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card section-card">
+                        <div class="card-header">
+                            <i class="fas fa-cog me-2"></i>Informations complémentaires
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr><th>Patrimoine foncier</th><td>{{ etablissement.patrimoine_foncier|default:"-" }}</td></tr>
+                                <tr><th>Ministère tutelle</th><td>{{ etablissement.ministere_tutelle|default:"-" }}</td></tr>
+                                <tr><th>Type formation</th><td>{{ etablissement.type_formation|default:"-" }}</td></tr>
+                                <tr><th>Dispositif orientation</th><td>{{ etablissement.dispositif_orientation|yesno:"Oui,Non" }}</td></tr>
+                                <tr><th>Cycles</th>
+                                    <td>
+                                        {% if etablissement.cycle_base_1 %}Base 1 (CQP)<br>{% endif %}
+                                        {% if etablissement.cycle_base_2 %}Base 2 (CAP)<br>{% endif %}
+                                        {% if etablissement.cycle_moyen_1 %}Moyen 1 (BEP)<br>{% endif %}
+                                        {% if etablissement.cycle_moyen_2 %}Moyen 2 (BAC){% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Onglet 2: Apprenants -->
+        <div class="tab-pane fade" id="apprenants" role="tabpanel" aria-labelledby="apprenants-tab">
+            <div class="d-flex justify-content-between mb-3">
+                <h4><i class="fas fa-users me-2"></i>Gestion des apprenants</h4>
+                <a href="{% url 'eftp_formel:apprenant_create' etablissement.id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus-circle"></i> Ajouter des apprenants
+                </a>
+            </div>
+            
+            {% if apprenants %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Cycle</th>
+                            <th>Année</th>
+                            <th>Masculin</th>
+                            <th>Féminin</th>
+                            <th>Total</th>
+                            <th>Redoublants M</th>
+                            <th>Redoublants F</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for apprenant in apprenants %}
+                        <tr>
+                            <td>{{ apprenant.get_cycle_display }}</td>
+                            <td>{{ apprenant.get_annee_etude_display }}</td>
+                            <td>{{ apprenant.masculin }}</td>
+                            <td>{{ apprenant.feminin }}</td>
+                            <td>{{ apprenant.masculin|add:apprenant.feminin }}</td>
+                            <td>{{ apprenant.redoublants_m }}</td>
+                            <td>{{ apprenant.redoublants_f }}</td>
+                            <td>
+                                <a href="{% url 'eftp_formel:apprenant_edit' apprenant.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'eftp_formel:apprenant_delete' apprenant.id %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucun apprenant enregistré. <a href="{% url 'eftp_formel:apprenant_create' etablissement.id %}">Ajouter des apprenants</a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Onglet 3: Formateurs -->
+        <div class="tab-pane fade" id="formateurs" role="tabpanel" aria-labelledby="formateurs-tab">
+            <div class="d-flex justify-content-between mb-3">
+                <h4><i class="fas fa-chalkboard-teacher me-2"></i>Gestion des formateurs</h4>
+                <a href="{% url 'eftp_formel:formateur_create' etablissement.id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus-circle"></i> Ajouter un formateur
+                </a>
+            </div>
+            
+            {% if formateurs %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Sexe</th>
+                            <th>Statut</th>
+                            <th>Nationalité</th>
+                            <th>Disciplines</th>
+                            <th>Volume horaire</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for formateur in formateurs %}
+                        <tr>
+                            <td>{{ formateur.nom_prenom }}</td>
+                            <td>{{ formateur.sexe }}</td>
+                            <td>{{ formateur.get_statut_display }}</td>
+                            <td>{{ formateur.nationalite }}</td>
+                            <td>{{ formateur.disciplines_enseignees|truncatechars:30 }}</td>
+                            <td>{{ formateur.volume_horaire_hebdo }} h</td>
+                            <td>
+                                <a href="{% url 'eftp_formel:formateur_edit' formateur.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'eftp_formel:formateur_delete' formateur.id %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucun formateur enregistré. <a href="{% url 'eftp_formel:formateur_create' etablissement.id %}">Ajouter un formateur</a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Onglet 4: Filières -->
+        <div class="tab-pane fade" id="filieres" role="tabpanel" aria-labelledby="filieres-tab">
+            <div class="d-flex justify-content-between mb-3">
+                <h4><i class="fas fa-book-open me-2"></i>Gestion des filières</h4>
+                <a href="{% url 'eftp_formel:filiere_create' etablissement.id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus-circle"></i> Ajouter une filière
+                </a>
+            </div>
+            
+            {% if filieres %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Filière</th>
+                            <th>Secteur</th>
+                            <th>Cycle</th>
+                            <th>Diplôme</th>
+                            <th>Effectif M</th>
+                            <th>Effectif F</th>
+                            <th>Durée (mois)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for filiere in filieres %}
+                        <tr>
+                            <td>{{ filiere.nom_filiere }}</td>
+                            <td>{{ filiere.get_secteur_display }}</td>
+                            <td>{{ filiere.get_cycle_display }}</td>
+                            <td>{{ filiere.diplome_prepare }}</td>
+                            <td>{{ filiere.effectif_m }}</td>
+                            <td>{{ filiere.effectif_f }}</td>
+                            <td>{{ filiere.duree_formation }}</td>
+                            <td>
+                                <a href="{% url 'eftp_formel:filiere_edit' filiere.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'eftp_formel:filiere_delete' filiere.id %}" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune filière enregistrée. <a href="{% url 'eftp_formel:filiere_create' etablissement.id %}">Ajouter une filière</a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Onglet 5: Infrastructures (à développer) -->
+        <div class="tab-pane fade" id="infrastructures" role="tabpanel" aria-labelledby="infrastructures-tab">
+            <div class="alert alert-secondary">
+                <i class="fas fa-tools me-2"></i>
+                Module Infrastructures en cours de développement...
+            </div>
+        </div>
+        
+        <!-- Onglet 6: Équipements (à développer) -->
+        <div class="tab-pane fade" id="equipements" role="tabpanel" aria-labelledby="equipements-tab">
+            <div class="alert alert-secondary">
+                <i class="fas fa-tools me-2"></i>
+                Module Équipements en cours de développement...
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

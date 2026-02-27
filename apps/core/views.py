@@ -36,7 +36,7 @@ def user_logout(request):
     logout(request)
     messages.info(request, "Vous avez été déconnecté")
     return redirect('core:index')
-
+'''
 @login_required
 def dashboard(request):
     """Tableau de bord (nécessite authentification)"""
@@ -47,6 +47,28 @@ def dashboard(request):
     
     context = {
         'nb_etablissements_formels': EtablissementFormel.objects.count(),
+        'nb_structures_non_formelles': StructureNonFormelle.objects.count(),
+        'nb_regions': Region.objects.count(),
+        'nb_departements': Departement.objects.count(),
+        'nb_communes': Commune.objects.count(),
+        'recent_backups': BackupHistory.objects.filter(statut='SUCCESS')[:5],
+    }
+    return render(request, 'core/dashboard.html', context)
+    '''
+@login_required
+def dashboard(request):
+    """Tableau de bord (nécessite authentification)"""
+    from apps.eftp_formel.models import EtablissementFormel
+    from apps.eftp_non_formel.models import StructureNonFormelle
+    from apps.renaloc.models import Region, Departement, Commune
+    
+    # Compter les établissements avec données complètes
+    etablissements = EtablissementFormel.objects.all()
+    etablissements_complets = sum(1 for e in etablissements if e.has_complete_data())
+    
+    context = {
+        'nb_etablissements_formels': etablissements.count(),
+        'etablissements_complets': etablissements_complets,
         'nb_structures_non_formelles': StructureNonFormelle.objects.count(),
         'nb_regions': Region.objects.count(),
         'nb_departements': Departement.objects.count(),

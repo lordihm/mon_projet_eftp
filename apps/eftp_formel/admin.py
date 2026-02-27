@@ -2,6 +2,9 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from .models import EtablissementFormel, ApprenantFormel, FiliereFormel, FormateurFormel
+from django.contrib import admin
+from django.utils.html import format_html
+from .models import EtablissementFormel, ApprenantFormel, FiliereFormel, FormateurFormel
 
 class ApprenantInline(admin.TabularInline):
     model = ApprenantFormel
@@ -23,31 +26,45 @@ class FormateurInline(admin.TabularInline):
 
 @admin.register(EtablissementFormel)
 class EtablissementFormelAdmin(admin.ModelAdmin):
-    list_display = ('code', 'nom', 'statut', 'zone', 'region', 'departement', 'type_etablissement', 'nb_apprenants')
+    list_display = ('code', 'sigle', 'nom', 'statut_badge', 'zone', 'region', 'departement', 
+                   'type_etablissement', 'nb_apprenants')
     list_filter = ('statut', 'zone', 'type_etablissement', 'region', 'departement')
-    search_fields = ('code', 'nom', 'region__nom', 'departement__nom', 'commune__nom')
+    search_fields = ('code', 'sigle', 'nom', 'region__nom', 'departement__nom', 'commune__nom')
     readonly_fields = ('created_at', 'updated_at')
     date_hierarchy = 'date_ouverture'
     
     fieldsets = (
         ('Identification', {
-            'fields': ('nom', 'code', 'statut', 'zone')
+            'fields': ('nom', 'sigle', 'code', 'statut', 'zone'),
+            'description': 'Informations de base de l\'établissement'
         }),
         ('Localisation administrative', {
-            'fields': ('region', 'departement', 'commune', 'quartier_village', 'adresse')
+            'fields': ('region', 'departement', 'commune', 'quartier_village', 'adresse'),
+            'description': 'Localisation géographique'
         }),
         ('Localisation pédagogique', {
-            'fields': ('dre', 'ipde')
+            'fields': ('dre', 'ipde'),
+            'classes': ('collapse',)
         }),
         ('Dates', {
-            'fields': ('date_autorisation', 'date_ouverture')
+            'fields': ('date_autorisation', 'date_ouverture'),
+            'classes': ('wide',)
         }),
         ('Coordonnées GPS', {
             'fields': ('longitude', 'latitude'),
             'classes': ('collapse',)
         }),
         ('Caractéristiques', {
-            'fields': ('type_etablissement', 'regime', 'internat_fonctionnel')
+            'fields': ('type_etablissement', 'regime', 'internat_fonctionnel'),
+            'description': 'Caractéristiques pédagogiques'
+        }),
+        ('Cycles proposés', {
+            'fields': ('cycle_base_1', 'cycle_base_2', 'cycle_moyen_1', 'cycle_moyen_2'),
+            'classes': ('wide',)
+        }),
+        ('Informations complémentaires', {
+            'fields': ('patrimoine_foncier', 'ministere_tutelle', 'type_formation', 'dispositif_orientation'),
+            'classes': ('collapse',)
         }),
         ('Métadonnées', {
             'fields': ('created_at', 'updated_at'),
@@ -56,16 +73,48 @@ class EtablissementFormelAdmin(admin.ModelAdmin):
     )
     
     inlines = [ApprenantInline, FiliereInline, FormateurInline]
+    actions = ['exporter_selection']
+    
+    def statut_badge(self, obj):
+        if obj.statut == 'PUBLIC':
+            return format_html('<span style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 3px;">Public</span>')
+        else:
+            return format_html('<span style="background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 3px;">Privé</span>')
+    statut_badge.short_description = "Statut"
     
     def nb_apprenants(self, obj):
         total = sum(app.masculin + app.feminin for app in obj.apprenants.all())
         return total
     nb_apprenants.short_description = "Total apprenants"
     
-    def save_model(self, request, obj, form, change):
-        if not change:  # Si c'est une création
-            obj.created_by = request.user
-        super().save_model(request, obj, form, change)
+    def exporter_selection(self, request, queryset):
+        from django.http import HttpResponse
+        import csv
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="etablissements_export.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Code', 'Sigle', 'Nom', 'Statut', 'Région', 'Type', 'Apprenants'])
+        
+        for etab in queryset:
+            writer.writerow([
+                etab.code,
+                etab.sigle,
+                etab.nom,
+                etab.get_statut_display(),
+                etab.region.nom,
+                etab.get_type_etablissement_display(),
+                etab.apprenants.count()
+            ])
+        
+        self.message_user(request, f"{queryset.count()} établissement(s) exporté(s)")
+        return response
+    exporter_selection.short_description = "Exporter la sélection (CSV)"
+    
+    class Media:
+        css = {
+            'all': ('css/admin_eftp.css',)
+        }
 
 @admin.register(ApprenantFormel)
 class ApprenantFormelAdmin(admin.ModelAdmin):

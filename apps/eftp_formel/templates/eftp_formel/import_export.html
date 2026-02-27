@@ -1,4 +1,5 @@
 {% extends 'eftp_formel/base_formel.html' %}
+{% load static %}
 
 {% block title %}Import/Export - EFTP Formel{% endblock %}
 
@@ -75,7 +76,6 @@
                         <select class="form-select" id="format" name="format" required>
                             <option value="excel">Excel (.xlsx)</option>
                             <option value="csv">CSV</option>
-                            <option value="json">JSON</option>
                         </select>
                     </div>
                     <button type="submit" class="btn btn-info text-white w-100">
@@ -98,32 +98,104 @@
                 </h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <a href="#" class="btn btn-outline-primary w-100 mb-2">
-                            <i class="fas fa-download me-2"></i>
-                            Modèle Établissements
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="#" class="btn btn-outline-primary w-100 mb-2">
-                            <i class="fas fa-download me-2"></i>
-                            Modèle Apprenants
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="#" class="btn btn-outline-primary w-100 mb-2">
-                            <i class="fas fa-download me-2"></i>
-                            Modèle Filières
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="#" class="btn btn-outline-primary w-100 mb-2">
-                            <i class="fas fa-download me-2"></i>
-                            Modèle Formateurs
-                        </a>
-                    </div>
-                </div>
+                <p>Téléchargez les modèles de fichiers pour faciliter vos imports :</p>
+                    <!-- Modèles de fichiers -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header bg-secondary text-white">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-download me-2"></i>
+                                        Télécharger les modèles de fichiers
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100 border-primary">
+                                                <div class="card-header bg-primary text-white">
+                                                    <h6 class="mb-0">Établissements</h6>
+                                                </div>
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-school fa-3x text-primary mb-3"></i>
+                                                    <a href="{% static 'templates/etablissement_template.xlsx' %}" 
+                                                    class="btn btn-outline-primary w-100" download>
+                                                        <i class="fas fa-download me-2"></i>Télécharger
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100 border-success">
+                                                <div class="card-header bg-success text-white">
+                                                    <h6 class="mb-0">Apprenants</h6>
+                                                </div>
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                                    <a href="{% static 'templates/apprenant_template.xlsx' %}" 
+                                                    class="btn btn-outline-success w-100" download>
+                                                        <i class="fas fa-download me-2"></i>Télécharger
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100 border-info">
+                                                <div class="card-header bg-info text-white">
+                                                    <h6 class="mb-0">Filières</h6>
+                                                </div>
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-book-open fa-3x text-info mb-3"></i>
+                                                    <a href="{% static 'templates/filiere_template.xlsx' %}" 
+                                                    class="btn btn-outline-info w-100" download>
+                                                        <i class="fas fa-download me-2"></i>Télécharger
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-3 mb-3">
+                                            <div class="card h-100 border-warning">
+                                                <div class="card-header bg-warning text-dark">
+                                                    <h6 class="mb-0">Formateurs</h6>
+                                                </div>
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-chalkboard-teacher fa-3x text-warning mb-3"></i>
+                                                    <a href="{% static 'templates/formateur_template.xlsx' %}" 
+                                                    class="btn btn-outline-warning w-100" download>
+                                                        <i class="fas fa-download me-2"></i>Télécharger
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-6 offset-md-3">
+                                            <div class="card border-secondary">
+                                                <div class="card-header bg-secondary text-white">
+                                                    <h6 class="mb-0">Aide - Valeurs de référence</h6>
+                                                </div>
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-question-circle fa-2x text-secondary mb-2"></i>
+                                                    <p>Consultez la liste des valeurs possibles pour chaque champ</p>
+                                                    <a href="{% static 'templates/valeurs_reference.xlsx' %}" 
+                                                    class="btn btn-outline-secondary" download>
+                                                        <i class="fas fa-download me-2"></i>Télécharger le guide
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                <p class="text-muted small mt-2">
+                    <i class="fas fa-exclamation-circle me-1"></i>
+                    Les modèles pour Apprenants, Filières et Formateurs seront disponibles prochainement.
+                </p>
             </div>
         </div>
     </div>

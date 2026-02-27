@@ -1,0 +1,75 @@
+{% extends 'eftp_formel/base_formel.html' %}
+
+{% block title %}{{ titre }}{% endblock %}
+
+{% block formel_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    {{ titre }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.cycle.id_for_label }}" class="form-label">Cycle *</label>
+                            {{ form.cycle }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.annee_etude.id_for_label }}" class="form-label">Année d'étude *</label>
+                            {{ form.annee_etude }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.masculin.id_for_label }}" class="form-label">Effectif Masculin</label>
+                            {{ form.masculin }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.feminin.id_for_label }}" class="form-label">Effectif Féminin</label>
+                            {{ form.feminin }}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.redoublants_m.id_for_label }}" class="form-label">Redoublants Masculins</label>
+                            {{ form.redoublants_m }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.redoublants_f.id_for_label }}" class="form-label">Redoublants Féminins</label>
+                            {{ form.redoublants_f }}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'eftp_formel:etablissement_complet' etablissement.id %}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

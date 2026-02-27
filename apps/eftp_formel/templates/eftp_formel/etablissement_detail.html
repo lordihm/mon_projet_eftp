@@ -3,7 +3,7 @@
 {% block title %}{{ etablissement.nom }} - Détails{% endblock %}
 
 {% block formel_content %}
-<div class="mb-4">
+<div class="mb-3">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'eftp_formel:etablissement_list' %}">Établissements</a></li>
@@ -14,11 +14,11 @@
 
 <div class="row">
     <div class="col-md-8">
-        <!-- Informations principales -->
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
                 <h4 class="mb-0">
                     <i class="fas fa-school me-2"></i>
+                    {% if etablissement.sigle %}[{{ etablissement.sigle }}] {% endif %}
                     {{ etablissement.nom }}
                     <small class="float-end">Code: {{ etablissement.code }}</small>
                 </h4>
@@ -27,6 +27,10 @@
                 <div class="row">
                     <div class="col-md-6">
                         <table class="table table-borderless">
+                            <tr>
+                                <th>Sigle :</th>
+                                <td>{{ etablissement.sigle|default:"-" }}</td>
+                            </tr>
                             <tr>
                                 <th>Statut :</th>
                                 <td>
@@ -72,155 +76,53 @@
                                 <td>{{ etablissement.commune.nom }}</td>
                             </tr>
                             <tr>
-                                <th>Quartier/Village :</th>
+                                <th>Quartier :</th>
                                 <td>{{ etablissement.quartier_village.nom|default:"-" }}</td>
                             </tr>
                         </table>
                     </div>
                 </div>
-                
-                <hr>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>Dates</h5>
-                        <p>
-                            <strong>Autorisation :</strong> {{ etablissement.date_autorisation|date:"d/m/Y"|default:"-" }}<br>
-                            <strong>Ouverture :</strong> {{ etablissement.date_ouverture|date:"d/m/Y"|default:"-" }}
-                        </p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Coordonnées GPS</h5>
-                        <p>
-                            <strong>Longitude :</strong> {{ etablissement.longitude|default:"-" }}<br>
-                            <strong>Latitude :</strong> {{ etablissement.latitude|default:"-" }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Statistiques -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card stat-card bg-info text-white">
-                    <div class="card-body">
-                        <h5>Apprenants</h5>
-                        <h2>{{ total_apprenants }}</h2>
-                        <small>{{ apprenants_m }} M / {{ apprenants_f }} F</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card stat-card bg-success text-white">
-                    <div class="card-body">
-                        <h5>Formateurs</h5>
-                        <h2>{{ total_formateurs }}</h2>
-                        <small>{{ formateurs_m }} M / {{ formateurs_f }} F</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card stat-card bg-warning text-white">
-                    <div class="card-body">
-                        <h5>Filières</h5>
-                        <h2>{{ total_filieres }}</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Filières -->
-        <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="mb-0">Filières proposées</h5>
-            </div>
-            <div class="card-body">
-                {% if filieres %}
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Filière</th>
-                                    <th>Secteur</th>
-                                    <th>Cycle</th>
-                                    <th>Diplôme</th>
-                                    <th>Effectif</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for filiere in filieres %}
-                                <tr>
-                                    <td>{{ filiere.nom_filiere }}</td>
-                                    <td>{{ filiere.get_secteur_display }}</td>
-                                    <td>{{ filiere.get_cycle_display }}</td>
-                                    <td>{{ filiere.diplome_prepare }}</td>
-                                    <td>{{ filiere.effectif_m }} M / {{ filiere.effectif_f }} F</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="text-muted">Aucune filière enregistrée</p>
-                {% endif %}
             </div>
         </div>
     </div>
     
     <div class="col-md-4">
-        <!-- Actions rapides -->
         <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Actions rapides</h5>
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Actions</h5>
             </div>
             <div class="card-body">
+                <!-- Indicateur de complétude (optionnel) -->
+                {% if etablissement.get_completion_percentage %}
+                <div class="mb-3 text-center">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Complétude du dossier</span>
+                        <span>{{ etablissement.get_completion_percentage }}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-{% if etablissement.get_completion_percentage >= 80 %}success{% elif etablissement.get_completion_percentage >= 50 %}warning{% else %}danger{% endif %}" 
+                            role="progressbar" 
+                            style="width: {{ etablissement.get_completion_percentage }}%;"></div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- UN SEUL JEU DE BOUTONS -->
                 <div class="d-grid gap-2">
-                    <a href="{% url 'eftp_formel:etablissement_edit' etablissement.id %}" class="btn btn-warning">
-                        <i class="fas fa-edit me-2"></i>Modifier
+                    <a href="{% url 'eftp_formel:etablissement_complet' etablissement.id %}" 
+                    class="btn btn-success">
+                        <i class="fas fa-edit me-2"></i>Saisie complète
                     </a>
-                    <a href="#" class="btn btn-info" onclick="window.print()">
-                        <i class="fas fa-print me-2"></i>Imprimer
+                    <a href="{% url 'eftp_formel:etablissement_edit' etablissement.id %}" 
+                    class="btn btn-warning">
+                        <i class="fas fa-pen me-2"></i>Modifier les informations de base
                     </a>
                     <a href="{% url 'eftp_formel:etablissement_delete' etablissement.id %}" 
-                       class="btn btn-danger"
-                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet établissement ?')">
+                    class="btn btn-danger"
+                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet établissement ?')">
                         <i class="fas fa-trash me-2"></i>Supprimer
                     </a>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Localisation -->
-        <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="mb-0">Localisation</h5>
-            </div>
-            <div class="card-body">
-                <p>
-                    <strong>DRE/FT/P :</strong> {{ etablissement.dre|default:"-" }}<br>
-                    <strong>IPDE/FT/P :</strong> {{ etablissement.ipde|default:"-" }}<br>
-                    <strong>Adresse :</strong> {{ etablissement.adresse|default:"-" }}
-                </p>
-                
-                <!-- Mini carte (placeholder) -->
-                <div class="bg-light p-3 text-center rounded">
-                    <i class="fas fa-map-marked-alt fa-3x text-muted mb-2"></i>
-                    <p class="small text-muted mb-0">Carte interactive à intégrer</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Métadonnées -->
-        <div class="card">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="mb-0">Métadonnées</h5>
-            </div>
-            <div class="card-body">
-                <p class="small">
-                    <strong>Créé le :</strong> {{ etablissement.created_at|date:"d/m/Y H:i"|default:"-" }}<br>
-                    <strong>Modifié le :</strong> {{ etablissement.updated_at|date:"d/m/Y H:i"|default:"-" }}
-                </p>
             </div>
         </div>
     </div>

@@ -1,26 +1,35 @@
 {% extends 'eftp_formel/base_formel.html' %}
-{% load widget_tweaks %}
+{% load static %}
 
-{% block title %}
-    {% if form.instance.pk %}Modifier{% else %}Nouvel{% endif %} établissement
-{% endblock %}
+{% block title %}{{ titre }}{% endblock %}
 
 {% block formel_content %}
 <div class="row justify-content-center">
-    <div class="col-md-10">
+    <div class="col-md-12">
         <div class="card">
             <div class="card-header bg-primary text-white">
                 <h4 class="mb-0">
-                    <i class="fas fa-{% if form.instance.pk %}edit{% else %}plus-circle{% endif %} me-2"></i>
-                    {% if form.instance.pk %}
-                        Modifier l'établissement : {{ form.instance.nom }}
-                    {% else %}
-                        Nouvel établissement formel
-                    {% endif %}
+                    <i class="fas fa-edit me-2"></i>
+                    {{ titre }}
                 </h4>
             </div>
             <div class="card-body">
-                <form method="post" enctype="multipart/form-data" id="etablissementForm">
+                <!-- Barre de progression -->
+                {% if progression is not None %}
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>Complétude du dossier</span>
+                        <span>{{ progression }}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ progression }}%;" 
+                             aria-valuenow="{{ progression }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <form method="post" id="etablissementForm">
                     {% csrf_token %}
                     
                     {% if form.non_field_errors %}
@@ -45,36 +54,44 @@
                                 <div class="accordion-body">
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="{{ form.nom.id_for_label }}" class="form-label">Nom de l'établissement *</label>
-                                            {% render_field form.nom class="form-control" placeholder="Nom complet de l&#39;établissement" %}
-                                            {% if form.nom.errors %}
-                                                <div class="text-danger">{{ form.nom.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
                                             <label for="{{ form.code.id_for_label }}" class="form-label">Code *</label>
-                                            {% render_field form.code class="form-control" placeholder="Code unique" %}
+                                            {{ form.code }}
                                             {% if form.code.errors %}
                                                 <div class="text-danger">{{ form.code.errors }}</div>
                                             {% endif %}
                                         </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="{{ form.sigle.id_for_label }}" class="form-label">Sigle</label>
+                                            {{ form.sigle }}
+                                            <small class="form-text text-muted">{{ form.sigle.help_text }}</small>
+                                            {% if form.sigle.errors %}
+                                                <div class="text-danger">{{ form.sigle.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="{{ form.nom.id_for_label }}" class="form-label">Nom *</label>
+                                            {{ form.nom }}
+                                            {% if form.nom.errors %}
+                                                <div class="text-danger">{{ form.nom.errors }}</div>
+                                            {% endif %}
+                                        </div>
                                         <div class="col-md-4 mb-3">
                                             <label for="{{ form.statut.id_for_label }}" class="form-label">Statut *</label>
-                                            {% render_field form.statut class="form-select" %}
+                                            {{ form.statut }}
                                             {% if form.statut.errors %}
                                                 <div class="text-danger">{{ form.statut.errors }}</div>
                                             {% endif %}
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label for="{{ form.zone.id_for_label }}" class="form-label">Zone *</label>
-                                            {% render_field form.zone class="form-select" %}
+                                            {{ form.zone }}
                                             {% if form.zone.errors %}
                                                 <div class="text-danger">{{ form.zone.errors }}</div>
                                             {% endif %}
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label for="{{ form.type_etablissement.id_for_label }}" class="form-label">Type d'établissement *</label>
-                                            {% render_field form.type_etablissement class="form-select" %}
+                                            <label for="{{ form.type_etablissement.id_for_label }}" class="form-label">Type *</label>
+                                            {{ form.type_etablissement }}
                                             {% if form.type_etablissement.errors %}
                                                 <div class="text-danger">{{ form.type_etablissement.errors }}</div>
                                             {% endif %}
@@ -84,7 +101,7 @@
                             </div>
                         </div>
                         
-                        <!-- Localisation administrative -->
+                        <!-- Localisation -->
                         <div class="accordion-item">
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLocalisation">
@@ -97,35 +114,35 @@
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label for="{{ form.region.id_for_label }}" class="form-label">Région *</label>
-                                            {% render_field form.region class="form-select" id="regionSelect" %}
+                                            {{ form.region }}
                                             {% if form.region.errors %}
                                                 <div class="text-danger">{{ form.region.errors }}</div>
                                             {% endif %}
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="{{ form.departement.id_for_label }}" class="form-label">Département *</label>
-                                            {% render_field form.departement class="form-select" id="departementSelect" %}
+                                            {{ form.departement }}
                                             {% if form.departement.errors %}
                                                 <div class="text-danger">{{ form.departement.errors }}</div>
                                             {% endif %}
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="{{ form.commune.id_for_label }}" class="form-label">Commune *</label>
-                                            {% render_field form.commune class="form-select" id="communeSelect" %}
+                                            {{ form.commune }}
                                             {% if form.commune.errors %}
                                                 <div class="text-danger">{{ form.commune.errors }}</div>
                                             {% endif %}
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="{{ form.quartier_village.id_for_label }}" class="form-label">Quartier/Village</label>
-                                            {% render_field form.quartier_village class="form-select" %}
+                                            {{ form.quartier_village }}
                                             {% if form.quartier_village.errors %}
                                                 <div class="text-danger">{{ form.quartier_village.errors }}</div>
                                             {% endif %}
                                         </div>
                                         <div class="col-12 mb-3">
-                                            <label for="{{ form.adresse.id_for_label }}" class="form-label">Adresse complète</label>
-                                            {% render_field form.adresse class="form-control" rows="2" %}
+                                            <label for="{{ form.adresse.id_for_label }}" class="form-label">Adresse</label>
+                                            {{ form.adresse }}
                                             {% if form.adresse.errors %}
                                                 <div class="text-danger">{{ form.adresse.errors }}</div>
                                             {% endif %}
@@ -146,30 +163,37 @@
                             <div id="collapseDates" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
                                 <div class="accordion-body">
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-4 mb-3">
                                             <label for="{{ form.date_autorisation.id_for_label }}" class="form-label">Date d'autorisation</label>
-                                            {% render_field form.date_autorisation type="date" class="form-control" %}
+                                            {{ form.date_autorisation }}
                                             {% if form.date_autorisation.errors %}
                                                 <div class="text-danger">{{ form.date_autorisation.errors }}</div>
                                             {% endif %}
                                         </div>
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-4 mb-3">
                                             <label for="{{ form.date_ouverture.id_for_label }}" class="form-label">Date d'ouverture</label>
-                                            {% render_field form.date_ouverture type="date" class="form-control" %}
+                                            {{ form.date_ouverture }}
                                             {% if form.date_ouverture.errors %}
                                                 <div class="text-danger">{{ form.date_ouverture.errors }}</div>
                                             {% endif %}
                                         </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="{{ form.regime.id_for_label }}" class="form-label">Régime *</label>
+                                            {{ form.regime }}
+                                            {% if form.regime.errors %}
+                                                <div class="text-danger">{{ form.regime.errors }}</div>
+                                            {% endif %}
+                                        </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="{{ form.longitude.id_for_label }}" class="form-label">Longitude</label>
-                                            {% render_field form.longitude class="form-control" placeholder="Ex: 2.123456" step="any" %}
+                                            {{ form.longitude }}
                                             {% if form.longitude.errors %}
                                                 <div class="text-danger">{{ form.longitude.errors }}</div>
                                             {% endif %}
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="{{ form.latitude.id_for_label }}" class="form-label">Latitude</label>
-                                            {% render_field form.latitude class="form-control" placeholder="Ex: 13.123456" step="any" %}
+                                            {{ form.latitude }}
                                             {% if form.latitude.errors %}
                                                 <div class="text-danger">{{ form.latitude.errors }}</div>
                                             {% endif %}
@@ -190,25 +214,103 @@
                             <div id="collapsePedagogie" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
                                 <div class="accordion-body">
                                     <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label for="{{ form.regime.id_for_label }}" class="form-label">Régime *</label>
-                                            {% render_field form.regime class="form-select" %}
-                                            {% if form.regime.errors %}
-                                                <div class="text-danger">{{ form.regime.errors }}</div>
-                                            {% endif %}
-                                        </div>
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md-6 mb-3">
                                             <label for="{{ form.dre.id_for_label }}" class="form-label">DRE/FT/P</label>
-                                            {% render_field form.dre class="form-control" placeholder="Direction Régionale" %}
+                                            {{ form.dre }}
                                             {% if form.dre.errors %}
                                                 <div class="text-danger">{{ form.dre.errors }}</div>
                                             {% endif %}
                                         </div>
-                                        <div class="col-md-4 mb-3">
+                                        <div class="col-md-6 mb-3">
                                             <label for="{{ form.ipde.id_for_label }}" class="form-label">IPDE/FT/P</label>
-                                            {% render_field form.ipde class="form-control" placeholder="Inspection" %}
+                                            {{ form.ipde }}
                                             {% if form.ipde.errors %}
                                                 <div class="text-danger">{{ form.ipde.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="form-check">
+                                                {{ form.cycle_base_1 }}
+                                                <label class="form-check-label" for="{{ form.cycle_base_1.id_for_label }}">
+                                                    Base 1 (CQP)
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="form-check">
+                                                {{ form.cycle_base_2 }}
+                                                <label class="form-check-label" for="{{ form.cycle_base_2.id_for_label }}">
+                                                    Base 2 (CAP)
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="form-check">
+                                                {{ form.cycle_moyen_1 }}
+                                                <label class="form-check-label" for="{{ form.cycle_moyen_1.id_for_label }}">
+                                                    Moyen 1 (BEP)
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="form-check">
+                                                {{ form.cycle_moyen_2 }}
+                                                <label class="form-check-label" for="{{ form.cycle_moyen_2.id_for_label }}">
+                                                    Moyen 2 (BAC)
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-check">
+                                                {{ form.internat_fonctionnel }}
+                                                <label class="form-check-label" for="{{ form.internat_fonctionnel.id_for_label }}">
+                                                    Internat fonctionnel
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-check">
+                                                {{ form.dispositif_orientation }}
+                                                <label class="form-check-label" for="{{ form.dispositif_orientation.id_for_label }}">
+                                                    Dispositif d'orientation
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Informations complémentaires -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseComplement">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Informations complémentaires
+                                </button>
+                            </h2>
+                            <div id="collapseComplement" class="accordion-collapse collapse" data-bs-parent="#formAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="{{ form.patrimoine_foncier.id_for_label }}" class="form-label">Patrimoine foncier</label>
+                                            {{ form.patrimoine_foncier }}
+                                            {% if form.patrimoine_foncier.errors %}
+                                                <div class="text-danger">{{ form.patrimoine_foncier.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="{{ form.ministere_tutelle.id_for_label }}" class="form-label">Ministère de tutelle</label>
+                                            {{ form.ministere_tutelle }}
+                                            {% if form.ministere_tutelle.errors %}
+                                                <div class="text-danger">{{ form.ministere_tutelle.errors }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="{{ form.type_formation.id_for_label }}" class="form-label">Type de formation</label>
+                                            {{ form.type_formation }}
+                                            {% if form.type_formation.errors %}
+                                                <div class="text-danger">{{ form.type_formation.errors }}</div>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -220,12 +322,11 @@
                     <hr>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{% url 'eftp_formel:etablissement_list' %}" class="btn btn-secondary me-md-2">
+                        <a href="{% url 'eftp_formel:etablissement_detail' etablissement.id %}" class="btn btn-secondary me-md-2">
                             <i class="fas fa-times"></i> Annuler
                         </a>
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> 
-                            {% if form.instance.pk %}Mettre à jour{% else %}Créer{% endif %}
+                            <i class="fas fa-save"></i> Enregistrer
                         </button>
                     </div>
                 </form>
@@ -237,9 +338,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Dynamique pour les select dépendants
-    const regionSelect = document.getElementById('regionSelect');
-    const deptSelect = document.getElementById('departementSelect');
-    const communeSelect = document.getElementById('communeSelect');
+    const regionSelect = document.getElementById('id_region');
+    const deptSelect = document.getElementById('id_departement');
+    const communeSelect = document.getElementById('id_commune');
+    const quartierSelect = document.getElementById('id_quartier_village');
     
     if (regionSelect) {
         regionSelect.addEventListener('change', function() {
@@ -248,10 +350,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetch(`/renaloc/get-departements/?region_id=${regionId}`)
                     .then(response => response.json())
                     .then(data => {
-                        deptSelect.innerHTML = '<option value="">Sélectionnez...</option>';
+                        deptSelect.innerHTML = '<option value="">---------</option>';
                         data.departements.forEach(dept => {
                             deptSelect.innerHTML += `<option value="${dept.id}">${dept.nom}</option>`;
                         });
+                        communeSelect.innerHTML = '<option value="">---------</option>';
+                        quartierSelect.innerHTML = '<option value="">---------</option>';
                     });
             }
         });
@@ -264,9 +368,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetch(`/renaloc/get-communes/?departement_id=${deptId}`)
                     .then(response => response.json())
                     .then(data => {
-                        communeSelect.innerHTML = '<option value="">Sélectionnez...</option>';
+                        communeSelect.innerHTML = '<option value="">---------</option>';
                         data.communes.forEach(commune => {
                             communeSelect.innerHTML += `<option value="${commune.id}">${commune.nom}</option>`;
+                        });
+                        quartierSelect.innerHTML = '<option value="">---------</option>';
+                    });
+            }
+        });
+    }
+    
+    if (communeSelect) {
+        communeSelect.addEventListener('change', function() {
+            const communeId = this.value;
+            if (communeId) {
+                fetch(`/renaloc/get-quartiers/?commune_id=${communeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        quartierSelect.innerHTML = '<option value="">---------</option>';
+                        data.quartiers.forEach(quartier => {
+                            quartierSelect.innerHTML += `<option value="${quartier.id}">${quartier.nom}</option>`;
                         });
                     });
             }

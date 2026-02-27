@@ -17,6 +17,30 @@
                     {% else %}
                         Nouvel établissement formel
                     {% endif %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.nom.id_for_label }}" class="form-label">Nom de l'établissement *</label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="text-danger">{{ form.nom.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="{{ form.sigle.id_for_label }}" class="form-label">Sigle</label>
+                            {{ form.sigle }}
+                            <small class="form-text text-muted">{{ form.sigle.help_text }}</small>
+                            {% if form.sigle.errors %}
+                                <div class="text-danger">{{ form.sigle.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="{{ form.code.id_for_label }}" class="form-label">Code *</label>
+                            {{ form.code }}
+                            {% if form.code.errors %}
+                                <div class="text-danger">{{ form.code.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </h4>
             </div>
             <div class="card-body">
@@ -31,8 +55,28 @@
                         </div>
                     {% endif %}
                     
-                    <!-- Utilisation de crispy forms pour un rendu plus simple -->
-                    {{ form|crispy }}
+                    <!-- Affichage simple des champs pour tester -->
+                    <div class="row">
+                        {% for field in form %}
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% if field.errors %}
+                                    <div class="text-danger">
+                                        {% for error in field.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
                     
                     <hr>
                     
@@ -51,44 +95,34 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Dynamique pour les select dépendants
-    const regionSelect = document.getElementById('id_region');
-    const deptSelect = document.getElementById('id_departement');
-    const communeSelect = document.getElementById('id_commune');
-    
-    if (regionSelect) {
-        regionSelect.addEventListener('change', function() {
-            const regionId = this.value;
-            if (regionId) {
-                fetch(`/renaloc/get-departements/?region_id=${regionId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        deptSelect.innerHTML = '<option value="">---------</option>';
-                        data.departements.forEach(dept => {
-                            deptSelect.innerHTML += `<option value="${dept.id}">${dept.nom}</option>`;
-                        });
-                    });
-            }
-        });
+<style>
+    /* Style pour les champs de formulaire */
+    #etablissementForm input[type="text"],
+    #etablissementForm input[type="number"],
+    #etablissementForm input[type="date"],
+    #etablissementForm select,
+    #etablissementForm textarea {
+        width: 100%;
+        padding: 0.375rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
     }
     
-    if (deptSelect) {
-        deptSelect.addEventListener('change', function() {
-            const deptId = this.value;
-            if (deptId) {
-                fetch(`/renaloc/get-communes/?departement_id=${deptId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        communeSelect.innerHTML = '<option value="">---------</option>';
-                        data.communes.forEach(commune => {
-                            communeSelect.innerHTML += `<option value="${commune.id}">${commune.nom}</option>`;
-                        });
-                    });
-            }
-        });
+    #etablissementForm input:focus,
+    #etablissementForm select:focus,
+    #etablissementForm textarea:focus {
+        color: #212529;
+        background-color: #fff;
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
     }
-});
-</script>
+</style>
 {% endblock %}
